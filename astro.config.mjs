@@ -2,6 +2,6 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://chaos-cellars.github.io',
+  site: 'https://chaos-cellars.com',
   output: 'static',
 });
