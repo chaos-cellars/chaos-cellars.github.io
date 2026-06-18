@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "title": "Tasting Event at Acquilano Wine Cellars",
+    "date": "2026-06-27",
+    "time": "12:00 PM – 3:00 PM",
+    "location": "Acquilano Wine Cellars, Canandaigua",
+    "address": "143 South Main Street, Canandaigua, NY 14424",
+    "description": "Join us for an afternoon tasting at Acquilano Wine Cellars. Will Jenkins will be on hand pouring our 2024 Vignoles and 2024 Dry Rosé — come taste the first vintage and say hello.",
+    "flyer": "/Events/2026 06 27 Acquilano Wine Cellars TASTING EVENT.jpg",
+    "ticket_url": null,
+    "sold_out": false
+  },
+  {
+    "id": 2,
+    "title": "Prose & Rosé Fest",
+    "date": "2026-07-19",
+    "time": "10:00 AM – 3:00 PM",
+    "location": "Bonesteel Wines, Victor",
+    "address": "236 High St Ext, Victor, NY 14564",
+    "description": "A Book Fair & Rosé Festival celebrating stories, sips, and community. Find us pouring at Bonesteel Wines in Victor for a day of local authors, outdoor browsing, and great wine.",
+    "flyer": "/Events/2026 07 19 Bonesteel Wines - PROSE & ROSE FEST.jpg",
+    "ticket_url": null,
+    "sold_out": false
+  }
+]

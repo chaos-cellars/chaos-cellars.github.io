@@ -1,0 +1,327 @@
+---
+import Layout from '../layouts/Layout.astro';
+import events from '../data/events.json';
+
+const sorted = [...events].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return {
+    weekday: d.toLocaleString('en-US', { weekday: 'long' }),
+    month: d.toLocaleString('en-US', { month: 'long' }),
+    day: d.getDate(),
+    year: d.getFullYear(),
+    shortMonth: d.toLocaleString('en-US', { month: 'short' }).toUpperCase(),
+  };
+}
+---
+<Layout title="Events" description="Upcoming tastings and events featuring Chaos Cellars wines in the Finger Lakes.">
+
+  <div class="page-header">
+    <span class="eyebrow">Mark Your Calendar</span>
+    <h1>Events</h1>
+    <p>Find us pouring at tastings and festivals across the region.</p>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div class="events-list">
+        {sorted.map(event => {
+          const date = formatDate(event.date);
+          return (
+            <article class:list={["event-card", { "is-sold-out": event.sold_out }]}>
+              <div class="event-date-col">
+                <span class="ev-month">{date.shortMonth}</span>
+                <span class="ev-day">{date.day}</span>
+                <span class="ev-year">{date.year}</span>
+              </div>
+              <div class="event-divider" aria-hidden="true"></div>
+              <div class="event-body">
+                <div class="event-meta">
+                  <span class="ev-weekday">{date.weekday}</span>
+                  <span class="ev-time">{event.time}</span>
+                </div>
+                <h2 class="ev-title">{event.title}</h2>
+                <p class="ev-location">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M6 1C4.07 1 2.5 2.57 2.5 4.5c0 2.625 3.5 6.5 3.5 6.5s3.5-3.875 3.5-6.5C9.5 2.57 7.93 1 6 1zm0 4.75a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z" fill="currentColor"/>
+                  </svg>
+                  {event.location} &mdash; {event.address}
+                </p>
+                <p class="ev-desc">{event.description}</p>
+                <div class="ev-actions">
+                  {event.sold_out ? (
+                    <span class="badge-sold-out">Sold Out</span>
+                  ) : event.ticket_url ? (
+                    <a href={event.ticket_url} class="btn btn-primary">Get Tickets</a>
+                  ) : null}
+                  {event.flyer && (
+                    <button class="btn btn-ghost flyer-btn" data-flyer={event.flyer} data-title={event.title}>
+                      View Flyer
+                    </button>
+                  )}
+                </div>
+              </div>
+              {event.flyer && (
+                <button class="flyer-thumb-btn" data-flyer={event.flyer} data-title={event.title} aria-label={`View flyer for ${event.title}`}>
+                  <img src={event.flyer} alt={`${event.title} flyer`} class="flyer-thumb" />
+                  <span class="flyer-thumb-overlay">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                    </svg>
+                  </span>
+                </button>
+              )}
+            </article>
+          );
+        })}
+      </div>
+
+      <div class="events-note">
+        <p>Can't make it? <a href="/#signup">Get on the list</a> and we'll reach out when new dates open up.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Flyer lightbox -->
+  <dialog class="flyer-dialog" id="flyerDialog" aria-label="Event flyer">
+    <button class="flyer-close" id="flyerClose" aria-label="Close flyer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+    <img class="flyer-dialog-img" id="flyerDialogImg" src="" alt="" />
+  </dialog>
+
+</Layout>
+
+<script>
+  const dialog = document.getElementById('flyerDialog') as HTMLDialogElement;
+  const img = document.getElementById('flyerDialogImg') as HTMLImageElement;
+  const closeBtn = document.getElementById('flyerClose');
+
+  function openFlyer(src: string, title: string) {
+    img.src = src;
+    img.alt = title + ' flyer';
+    dialog.showModal();
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeFlyer() {
+    dialog.close();
+    document.body.style.overflow = '';
+  }
+
+  closeBtn?.addEventListener('click', closeFlyer);
+
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) closeFlyer();
+  });
+
+  dialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+  });
+
+  document.querySelectorAll('[data-flyer]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const src = (btn as HTMLElement).dataset.flyer ?? '';
+      const title = (btn as HTMLElement).dataset.title ?? 'Event';
+      openFlyer(src, title);
+    });
+  });
+</script>
+
+<style>
+  .events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .event-card {
+    display: grid;
+    grid-template-columns: 6rem 1px 1fr auto;
+    gap: 0;
+    background: var(--surface);
+    transition: background 0.2s;
+  }
+  .event-card:hover { background: var(--surface-2); }
+  .event-card.is-sold-out { opacity: 0.55; }
+
+  .event-date-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.25rem;
+    text-align: center;
+  }
+  .ev-month {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--green-mid);
+    font-weight: 500;
+  }
+  .ev-day {
+    font-family: var(--font-serif);
+    font-size: 3rem;
+    line-height: 1;
+    color: var(--text-bright);
+  }
+  .ev-year {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 0.15rem;
+  }
+
+  .event-divider { background: var(--border); }
+
+  .event-body {
+    padding: 2rem 2rem 2rem 2.5rem;
+  }
+  .event-meta {
+    display: flex;
+    gap: 1.25rem;
+    margin-bottom: 0.6rem;
+    align-items: center;
+  }
+  .ev-weekday {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .ev-time {
+    font-size: 0.78rem;
+    color: var(--gold);
+    font-weight: 500;
+  }
+  .ev-title {
+    font-size: clamp(1.4rem, 3vw, 1.85rem);
+    margin-bottom: 0.5rem;
+  }
+  .ev-location {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.85rem;
+  }
+  .ev-desc {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.65;
+    max-width: 560px;
+    margin-bottom: 1.5rem;
+  }
+  .ev-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .badge-sold-out {
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    padding: 0.5rem 1rem;
+    display: inline-block;
+  }
+
+  /* ── Flyer thumbnail ── */
+  .flyer-thumb-btn {
+    position: relative;
+    width: 140px;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    border-left: 1px solid var(--border);
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    display: block;
+  }
+  .flyer-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+  .flyer-thumb-btn:hover .flyer-thumb { transform: scale(1.05); }
+  .flyer-thumb-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(74, 93, 58, 0.55);
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .flyer-thumb-btn:hover .flyer-thumb-overlay { opacity: 1; }
+
+  /* ── Flyer dialog / lightbox ── */
+  .flyer-dialog {
+    border: none;
+    background: transparent;
+    padding: 0;
+    max-width: 90vw;
+    max-height: 92vh;
+    outline: none;
+  }
+  .flyer-dialog::backdrop {
+    background: rgba(26, 20, 10, 0.82);
+    backdrop-filter: blur(4px);
+  }
+  .flyer-dialog-img {
+    display: block;
+    max-width: 90vw;
+    max-height: 88vh;
+    object-fit: contain;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  }
+  .flyer-close {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.25rem;
+    background: rgba(245, 241, 232, 0.15);
+    border: 1px solid rgba(245, 241, 232, 0.3);
+    color: #fdf8f2;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    z-index: 10;
+  }
+  .flyer-close:hover { background: rgba(245, 241, 232, 0.25); }
+
+  .events-note {
+    margin-top: 3rem;
+    text-align: center;
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+  .events-note a { color: var(--green-dark); text-decoration: underline; text-decoration-color: transparent; transition: text-decoration-color 0.2s; }
+  .events-note a:hover { text-decoration-color: var(--green-dark); }
+
+  @media (max-width: 700px) {
+    .event-card { grid-template-columns: 4.5rem 1px 1fr; }
+    .flyer-thumb-btn { display: none; }
+    .event-date-col { padding: 1.5rem 0.75rem; }
+    .ev-day { font-size: 2.2rem; }
+    .event-body { padding: 1.5rem 1.25rem; }
+  }
+</style>

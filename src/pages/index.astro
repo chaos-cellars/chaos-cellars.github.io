@@ -1,0 +1,572 @@
+---
+import Layout from '../layouts/Layout.astro';
+import events from '../data/events.json';
+
+const upcoming = events.slice(0, 2);
+---
+<Layout title="Home" description="Chaos Cellars — Where great ideas emerge from creative chaos. Small-lot natural wines from the Finger Lakes, NY.">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg" aria-hidden="true">
+      <div class="hero-orb orb-1"></div>
+      <div class="hero-orb orb-2"></div>
+    </div>
+    <div class="hero-content">
+      <span class="eyebrow">Finger Lakes, NY · Est. 2018</span>
+      <h1 class="hero-title">Wine born<br /><em>from chaos.</em></h1>
+      <p class="hero-sub">Where great ideas emerge from creative chaos. Small-lot, naturally made wines from the hillsides above Seneca Lake — rooted in tradition, shaped by curiosity, and honest about both.</p>
+      <div class="hero-actions">
+        <a href="/events" class="btn btn-primary">Upcoming Events</a>
+        <a href="/about" class="btn btn-ghost">Our Story</a>
+      </div>
+    </div>
+    <div class="hero-scroll" aria-hidden="true">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- The Wines -->
+  <section class="wines-section">
+    <div class="container">
+      <div class="wines-head">
+        <div>
+          <span class="eyebrow-label">The 2024 Vintage</span>
+          <h2>Our Wines</h2>
+        </div>
+        <p class="wines-intro">Our first vintage features two wines made from hybrid grapes, embracing a little bit of chaos.</p>
+      </div>
+      <div class="wines-grid">
+
+        <article class="wine-card">
+          <div class="wine-img-wrap">
+            <img src="/Images/IMG_8604.jpg" alt="2024 Vignoles — Chaos Cellars" />
+          </div>
+          <div class="wine-body">
+            <span class="wine-type">Semi-Sweet White Wine</span>
+            <h3>2024 Vignoles</h3>
+            <p>A semi-sweet white wine with beautiful aromatics and bright tropical fruits. Fully ripened on the vine, pressed and fermented in barrel.</p>
+          </div>
+        </article>
+
+        <article class="wine-card">
+          <div class="wine-img-wrap">
+            <img src="/Images/IMG_8736.jpg" alt="2024 Dry Rosé — Chaos Cellars" />
+          </div>
+          <div class="wine-body">
+            <span class="wine-type">Chambourcin · Regent</span>
+            <h3>2024 Dry Rosé</h3>
+            <p>A fully dry blend of Chambourcin and Regent. Hand macerated and cold soaked overnight for its lush pink color and soft structure. High acidity, berry characteristics, clean finish.</p>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Instagram Feed -->
+  <section class="ig-section">
+    <div class="container">
+      <div class="ig-head">
+        <div>
+          <span class="eyebrow-label">Latest from the Field</span>
+          <h2>On Instagram</h2>
+        </div>
+        <a href="https://instagram.com/chaoscellars" target="_blank" rel="noopener" class="btn btn-ghost ig-cta">
+          Follow @chaoscellars
+        </a>
+      </div>
+      <!-- Behold.so Instagram feed widget.
+           Steps to activate:
+           1. Sign up at behold.so
+           2. Connect your @chaoscellars Instagram account
+           3. Create a feed — copy your Feed ID (looks like "abc12345")
+           4. Replace YOUR_FEED_ID below with that ID
+           The feed will auto-update whenever you post. -->
+      <behold-widget feed-id="RnNHBmQPhT1zf4NNj4oW"></behold-widget>
+      <script is:inline>
+        (() => {
+          const d=document,s=d.createElement("script");s.type="module";
+          s.src="https://w.behold.so/widget.js";d.head.append(s);
+        })();
+      </script>
+    </div>
+  </section>
+
+  <!-- Teaser Events -->
+  <section class="section teaser-section">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow-label">On the Calendar</span>
+        <h2>Upcoming Events</h2>
+      </div>
+      <div class="teaser-grid">
+        {upcoming.map(event => {
+          const d = new Date(event.date + 'T12:00:00');
+          const month = d.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+          const day = d.getDate();
+          return (
+            <article class="teaser-card">
+              <div class="teaser-date">
+                <span class="t-month">{month}</span>
+                <span class="t-day">{day}</span>
+              </div>
+              <div class="teaser-body">
+                <p class="t-location">{event.location}</p>
+                <h3>{event.title}</h3>
+                <p class="t-time">{event.time}</p>
+                <p class="t-desc">{event.description}</p>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      <div class="teaser-cta">
+        <a href="/events" class="btn btn-ghost">View All Events</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Email Signup -->
+  <section class="signup-section" id="signup">
+    <div class="container signup-inner">
+      <div class="signup-copy">
+        <span class="eyebrow-label">The List</span>
+        <h2>First access. No noise.</h2>
+        <p>New releases, event invites, and club allocations — before they go public. We email when it matters, never otherwise.</p>
+      </div>
+      <iframe name="mc-iframe" style="display:none" aria-hidden="true" title="Mailchimp subscription"></iframe>
+      <form
+        class="signup-form"
+        id="mc-form"
+        action="https://chaos-cellars.us19.list-manage.com/subscribe/post"
+        method="POST"
+        target="mc-iframe"
+      >
+        <input type="hidden" name="u" value="bfe6440c4c375aa3cc2920f7d" />
+        <input type="hidden" name="id" value="263dc2ba00" />
+        <div aria-hidden="true" style="position:absolute;left:-5000px">
+          <input type="text" name="b_bfe6440c4c375aa3cc2920f7d_263dc2ba00" tabindex="-1" value="" />
+        </div>
+        <label for="mc-email" class="sr-only">Email address</label>
+        <input
+          type="email"
+          id="mc-email"
+          name="EMAIL"
+          placeholder="your@email.com"
+          required
+          autocomplete="email"
+        />
+        <button type="submit" class="btn btn-primary" id="mc-submit">Join</button>
+      </form>
+      <p class="signup-fine" id="mc-status" aria-live="polite">No spam, ever. Unsubscribe at any time.</p>
+    </div>
+  </section>
+
+  <!-- Ethos strip -->
+  <section class="section ethos-section">
+    <div class="container ethos-grid">
+      <div class="ethos-item">
+        <span class="ethos-num">01</span>
+        <h3>Finger Lakes Terroir</h3>
+        <p>Glacial soils, lake-tempered air, and cold winters that keep us honest. We grow here because no other place on earth makes wine quite like this one.</p>
+      </div>
+      <div class="ethos-item">
+        <span class="ethos-num">02</span>
+        <h3>Nothing to Hide</h3>
+        <p>Native yeast, no fining, no filtering, minimal sulfur. We make wine the way curious people have made it for centuries — by paying close attention.</p>
+      </div>
+      <div class="ethos-item">
+        <span class="ethos-num">03</span>
+        <h3>Where Ideas Emerge</h3>
+        <p>Great wine isn't planned. It's coaxed, questioned, and occasionally argued into existence. That's the chaos we're inviting you into.</p>
+      </div>
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 6rem clamp(1.25rem, 5vw, 3rem);
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 90% 70% at 50% 30%, #dde4d0 0%, var(--black) 75%);
+  }
+  .hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.45;
+  }
+  .orb-1 {
+    width: 650px; height: 650px;
+    background: #a8b894;
+    top: -200px; left: -150px;
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+  .orb-2 {
+    width: 420px; height: 420px;
+    background: #d4b864;
+    bottom: -100px; right: -80px;
+    animation: drift 22s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes drift {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(40px, 30px) scale(1.05); }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    text-align: center;
+  }
+  .eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    display: block;
+    margin-bottom: 1.5rem;
+  }
+  .hero-title {
+    font-size: clamp(3.5rem, 10vw, 7rem);
+    line-height: 0.95;
+    margin-bottom: 1.75rem;
+    color: var(--green-dark);
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--wine);
+  }
+  .hero-sub {
+    font-family: var(--font-serif);
+    font-size: clamp(1.05rem, 2.5vw, 1.25rem);
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0.6;
+  }
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--muted), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.4; transform: scaleY(0.8); }
+    50%       { opacity: 1;   transform: scaleY(1); }
+  }
+
+  /* ── Section shared ── */
+  .section-head { margin-bottom: 3rem; }
+  .eyebrow-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+  .section-head h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+  }
+
+  /* ── Instagram ── */
+  .ig-section {
+    padding: clamp(3rem, 8vw, 5rem) clamp(1.25rem, 5vw, 3rem);
+    border-bottom: 1px solid var(--border);
+    background: var(--deep);
+  }
+  .ig-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+  .ig-head h2 { font-size: clamp(2rem, 4vw, 3rem); }
+  .ig-widget-wrap {
+    width: 100%;
+  }
+  @media (max-width: 600px) {
+    .ig-head { flex-direction: column; align-items: flex-start; }
+  }
+
+  /* ── Teaser Events ── */
+  .teaser-section { background: var(--deep); }
+  .teaser-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 2.5rem;
+  }
+  .teaser-card {
+    display: flex;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: var(--surface);
+    transition: background 0.2s;
+  }
+  .teaser-card:hover { background: var(--surface-2); }
+  .teaser-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 3rem;
+    padding-top: 0.1rem;
+  }
+  .t-month {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--green-mid);
+    font-weight: 500;
+  }
+  .t-day {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--text-bright);
+  }
+  .t-location {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .teaser-card h3 {
+    font-size: 1.35rem;
+    margin-bottom: 0.3rem;
+  }
+  .t-time {
+    font-size: 0.8rem;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+  }
+  .t-desc {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .teaser-cta { text-align: center; }
+
+  /* ── Email Signup ── */
+  .signup-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: clamp(3rem, 8vw, 5rem) clamp(1.25rem, 5vw, 3rem);
+  }
+  .signup-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem 4rem;
+    align-items: center;
+  }
+  .signup-copy { grid-column: 1; }
+  .signup-copy h2 { font-size: clamp(2rem, 4vw, 2.75rem); margin-bottom: 0.75rem; }
+  .signup-copy p { color: var(--muted); font-family: var(--font-serif); font-size: 1.1rem; }
+  .signup-form {
+    grid-column: 2;
+    display: flex;
+    gap: 0;
+  }
+  .signup-form input {
+    flex: 1;
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-right: none;
+    color: var(--text-bright);
+    padding: 0.85rem 1.25rem;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .signup-form input::placeholder { color: var(--muted); }
+  .signup-form input:focus { border-color: var(--wine); }
+  .signup-form .btn { white-space: nowrap; }
+  .signup-fine {
+    grid-column: 2;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: -2rem;
+    opacity: 0.7;
+    transition: color 0.3s, opacity 0.3s;
+  }
+  .signup-fine.is-success {
+    color: var(--green-dark);
+    opacity: 1;
+    font-size: 0.85rem;
+  }
+  .signup-fine.is-error {
+    color: var(--wine);
+    opacity: 1;
+    font-size: 0.82rem;
+  }
+
+  @media (max-width: 720px) {
+    .signup-inner { grid-template-columns: 1fr; }
+    .signup-copy, .signup-form, .signup-fine { grid-column: 1; }
+    .signup-fine { margin-top: 0; }
+  }
+
+  /* ── Ethos ── */
+  .ethos-section { border-top: 1px solid var(--border); }
+  .ethos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 3rem;
+  }
+  .ethos-num {
+    font-family: var(--font-serif);
+    font-size: 3rem;
+    color: var(--border);
+    display: block;
+    margin-bottom: 0.5rem;
+    line-height: 1;
+  }
+  .ethos-item h3 { font-size: 1.4rem; margin-bottom: 0.6rem; }
+  .ethos-item p { color: var(--muted); font-size: 0.92rem; line-height: 1.65; }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
+  }
+
+  /* ── Wines ── */
+  .wines-section {
+    padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem, 5vw, 3rem);
+    background: var(--black);
+    border-bottom: 1px solid var(--border);
+  }
+  .wines-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+  .wines-head h2 { font-size: clamp(2rem, 4vw, 3rem); }
+  .wines-intro {
+    max-width: 380px;
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--muted);
+    font-size: 1.05rem;
+    line-height: 1.65;
+    padding-bottom: 0.2rem;
+  }
+  .wines-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .wine-card {
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    transition: background 0.2s;
+  }
+  .wine-card:hover { background: var(--surface-2); }
+  .wine-img-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+  }
+  .wine-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s ease;
+  }
+  .wine-card:hover .wine-img-wrap img { transform: scale(1.04); }
+  .wine-body {
+    padding: 1.75rem 2rem 2rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .wine-type {
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .wine-body h3 {
+    font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+    margin-bottom: 0.85rem;
+    color: var(--text-bright);
+  }
+  .wine-body p {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 600px) {
+    .wines-grid { grid-template-columns: 1fr; }
+    .wines-head { flex-direction: column; align-items: flex-start; }
+    .wines-intro { max-width: 100%; }
+  }
+</style>
+
+<script>
+  const form = document.getElementById('mc-form') as HTMLFormElement | null;
+  const status = document.getElementById('mc-status') as HTMLElement | null;
+
+  form?.addEventListener('submit', () => {
+    if (status) {
+      status.textContent = "You're on the list — first to know.";
+      status.className = 'signup-fine is-success';
+    }
+    form.reset();
+  });
+</script>

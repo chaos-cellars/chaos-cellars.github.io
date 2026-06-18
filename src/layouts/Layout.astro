@@ -1,0 +1,329 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = "Chaos Cellars — Where great ideas emerge from creative chaos. Small-lot natural wines from the Finger Lakes, NY." } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content={description} />
+  <title>{title} | Chaos Cellars</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <a href="/" class="wordmark">
+      <img src="/Logos/ChaosCellars-AltLogo-Warptext-green.png" alt="Chaos Cellars" class="wordmark-img" />
+    </a>
+    <nav>
+      <a href="/" class:list={["nav-link", { active: currentPath === "/" }]}>Home</a>
+      <a href="/events" class:list={["nav-link", { active: currentPath.startsWith("/events") }]}>Events</a>
+      <a href="/partners" class:list={["nav-link", { active: currentPath.startsWith("/partners") }]}>Distribution</a>
+      <a href="/about" class:list={["nav-link", { active: currentPath.startsWith("/about") }]}>About</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Toggle menu" onclick="this.closest('header').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <main>
+    <slot />
+  </main>
+
+  <footer class="site-footer">
+    <a href="/" class="footer-logo-link">
+      <img src="/Logos/ChaosCellars-PrimaryLogo-Green.png" alt="Chaos Cellars" class="footer-logo" />
+    </a>
+    <p class="footer-tagline">Where great ideas emerge from creative chaos.</p>
+    <div class="footer-social">
+      <a href="https://instagram.com/chaoscellars" target="_blank" rel="noopener" aria-label="Instagram" class="footer-social-link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+          <circle cx="12" cy="12" r="4"/>
+          <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+        </svg>
+        <span>@chaoscellars</span>
+      </a>
+      <a href="https://facebook.com/chaoscellars" target="_blank" rel="noopener" aria-label="Facebook" class="footer-social-link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+        </svg>
+        <span>@chaoscellars</span>
+      </a>
+    </div>
+    <a href="mailto:chaos-cellars@outlook.com" class="footer-email">chaos-cellars@outlook.com</a>
+    <nav class="footer-nav">
+      <a href="/">Home</a>
+      <a href="/events">Events</a>
+      <a href="/partners">Distribution</a>
+      <a href="/about">About</a>
+    </nav>
+    <p class="footer-legal">© {new Date().getFullYear()} Chaos Cellars. Please drink responsibly. Must be 21+ to purchase.</p>
+  </footer>
+</body>
+</html>
+
+<style is:global>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #f5f1e8;
+    --deep: #ece7d8;
+    --surface: #e4dece;
+    --surface-2: #d8d1be;
+    --border: #c5bba6;
+    --muted: #7a6d57;
+    --text: #3a3020;
+    --text-bright: #1c1810;
+    --wine: #b85c47;
+    --wine-light: #c96b54;
+    --wine-glow: #d47a62;
+    --gold: #d4b864;
+    --gold-light: #c9a845;
+    --green-dark: #4a5d3a;
+    --green-mid: #7a8b6b;
+    --green-light: #a8b894;
+
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-sans: 'Inter', system-ui, sans-serif;
+
+    --max-w: 1120px;
+    --gap: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.65;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  main { flex: 1; }
+
+  img { max-width: 100%; display: block; }
+
+  a { color: inherit; text-decoration: none; }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
+    font-weight: 300;
+    line-height: 1.1;
+    color: var(--text-bright);
+  }
+
+  /* ── Header ── */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem clamp(1.25rem, 5vw, 3rem);
+    background: rgba(245, 241, 232, 0.94);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .wordmark {
+    display: block;
+    flex-shrink: 0;
+  }
+  .wordmark-img {
+    height: 48px;
+    width: auto;
+    display: block;
+  }
+
+  .site-header nav {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .nav-link {
+    font-size: 0.78rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+  .nav-link:hover, .nav-link.active { color: var(--text-bright); }
+  .nav-link.active { color: var(--green-dark); }
+
+  .nav-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .nav-toggle span {
+    display: block;
+    width: 22px;
+    height: 1.5px;
+    background: var(--text);
+    transition: 0.2s;
+  }
+
+  @media (max-width: 640px) {
+    .nav-toggle { display: flex; }
+    .site-header nav {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      gap: 0;
+      background: rgba(245, 241, 232, 0.97);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+    }
+    .site-header.open nav { display: flex; }
+    .nav-link { padding: 0.75rem 2rem; width: 100%; font-size: 0.85rem; }
+  }
+
+  /* ── Footer ── */
+  .site-footer {
+    text-align: center;
+    padding: 3.5rem clamp(1.25rem, 5vw, 3rem);
+    border-top: 1px solid var(--border);
+    background: var(--deep);
+  }
+  .footer-logo-link {
+    display: inline-block;
+    margin-bottom: 1.25rem;
+  }
+  .footer-logo {
+    height: 88px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  .footer-tagline {
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+  }
+  .footer-social {
+    display: flex;
+    gap: 1.75rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+  .footer-social-link {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+  .footer-social-link:hover { color: var(--green-dark); }
+  .footer-email {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 1.75rem;
+    transition: color 0.2s;
+  }
+  .footer-email:hover { color: var(--green-dark); }
+  .footer-nav {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+  .footer-nav a {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+  .footer-nav a:hover { color: var(--green-dark); }
+  .footer-legal { font-size: 0.72rem; color: var(--muted); opacity: 0.7; }
+
+  /* ── Shared utility ── */
+  .page-header {
+    padding: clamp(4rem, 10vw, 8rem) clamp(1.25rem, 5vw, 3rem) clamp(2rem, 5vw, 4rem);
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--deep) 0%, var(--black) 100%);
+    border-top: 3px solid var(--green-dark);
+  }
+  .page-header .eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    margin-bottom: 1rem;
+    display: block;
+  }
+  .page-header h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    margin-bottom: 1rem;
+  }
+  .page-header p {
+    max-width: 540px;
+    margin: 0 auto;
+    color: var(--muted);
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-style: italic;
+  }
+
+  .container {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0 clamp(1.25rem, 5vw, 3rem);
+  }
+
+  .section {
+    padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem, 5vw, 3rem);
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.85rem 2rem;
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .btn-primary {
+    background: var(--wine);
+    color: #fdf8f2;
+    border-color: var(--wine);
+  }
+  .btn-primary:hover { background: var(--wine-light); border-color: var(--wine-light); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--green-dark);
+    border-color: var(--green-dark);
+  }
+  .btn-ghost:hover { background: var(--green-dark); color: var(--black); }
+</style>

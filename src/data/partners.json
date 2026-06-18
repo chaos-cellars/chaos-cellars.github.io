@@ -1,0 +1,34 @@
+{
+  "wine_stores": [
+    {
+      "id": 1,
+      "name": "Water Street Wines & Spirits",
+      "neighborhood": "Penn Yan, NY",
+      "address": "132 Water St., Penn Yan, NY 14527",
+      "logo": "/Distribution/Water Street Wines & Spirits.jpg",
+      "phone": "",
+      "website": ""
+    },
+    {
+      "id": 2,
+      "name": "Funk and Fermentation",
+      "neighborhood": "Buffalo, NY",
+      "address": "587 West Delevan Ave., Buffalo, NY 14222",
+      "logo": "/Distribution/Funk and Fermentation.jpg",
+      "phone": "",
+      "website": ""
+    }
+  ],
+  "on_premise": [
+    {
+      "id": 1,
+      "name": "Mystic Hills Brewing",
+      "neighborhood": "East Concord, NY",
+      "address": "10959 Allen Rd., East Concord, NY 14055",
+      "logo": "/Distribution/Mystic Hills Brewing.jpg",
+      "notes": "Available by the glass",
+      "phone": "",
+      "website": ""
+    }
+  ]
+}

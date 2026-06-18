@@ -1,0 +1,202 @@
+---
+import Layout from '../layouts/Layout.astro';
+import partners from '../data/partners.json';
+---
+<Layout title="Distribution" description="Find Chaos Cellars wines at these select shops and locations across New York.">
+
+  <div class="page-header">
+    <span class="eyebrow">Where to Find Us</span>
+    <h1>Distribution</h1>
+    <p>A carefully chosen group of shops and spots who believe in the same kind of wine we do.</p>
+  </div>
+
+  <section class="section">
+    <div class="container">
+
+      <div class="partners-block">
+        <div class="block-head">
+          <span class="block-label">Wine Shops</span>
+          <span class="block-count">{partners.wine_stores.length} locations</span>
+        </div>
+        <div class="partners-grid">
+          {partners.wine_stores.map(shop => (
+            <article class="partner-card">
+              {shop.logo && (
+                <div class="partner-logo-wrap">
+                  <img src={shop.logo} alt={shop.name + ' logo'} class="partner-logo" />
+                </div>
+              )}
+              <div class="partner-body">
+                <h3>{shop.name}</h3>
+                <p class="p-neighborhood">{shop.neighborhood}</p>
+                <p class="p-address">{shop.address}</p>
+                {shop.notes && <p class="p-notes">{shop.notes}</p>}
+                <div class="p-links">
+                  {shop.phone && (
+                    <a href={`tel:${shop.phone.replace(/\D/g,'')}`} class="p-link">{shop.phone}</a>
+                  )}
+                  {shop.website && shop.website !== '#' && (
+                    <a href={shop.website} class="p-link" target="_blank" rel="noopener">Website</a>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div class="partners-block">
+        <div class="block-head">
+          <span class="block-label">On Premise</span>
+          <span class="block-count">By the glass</span>
+        </div>
+        <div class="partners-grid">
+          {partners.on_premise.map(bar => (
+            <article class="partner-card">
+              {bar.logo && (
+                <div class="partner-logo-wrap">
+                  <img src={bar.logo} alt={bar.name + ' logo'} class="partner-logo" />
+                </div>
+              )}
+              <div class="partner-body">
+                <h3>{bar.name}</h3>
+                <p class="p-neighborhood">{bar.neighborhood}</p>
+                <p class="p-address">{bar.address}</p>
+                {bar.notes && <p class="p-notes">{bar.notes}</p>}
+                <div class="p-links">
+                  {bar.phone && (
+                    <a href={`tel:${bar.phone.replace(/\D/g,'')}`} class="p-link">{bar.phone}</a>
+                  )}
+                  {bar.website && bar.website !== '#' && (
+                    <a href={bar.website} class="p-link" target="_blank" rel="noopener">Website</a>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div class="partners-cta">
+        <h2>Want to carry our wines?</h2>
+        <p>We keep our distribution intentional and small. If you're an account that cares about natural, thoughtfully made wine, we'd like to hear from you.</p>
+        <a href="mailto:chaos-cellars@outlook.com" class="btn btn-ghost">Get In Touch</a>
+      </div>
+
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+  .partners-block { margin-bottom: 4.5rem; }
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .block-label {
+    font-family: var(--font-serif);
+    font-size: 1.75rem;
+    font-weight: 300;
+    color: var(--text-bright);
+  }
+  .block-count {
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+  }
+
+  .partners-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .partner-card {
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    transition: background 0.2s;
+    overflow: hidden;
+  }
+  .partner-card:hover { background: var(--surface-2); }
+
+  .partner-logo-wrap {
+    width: 100%;
+    height: 110px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-2);
+  }
+  .partner-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    padding: 1rem 1.5rem;
+  }
+
+  .partner-body {
+    padding: 1.25rem 1.75rem 1.75rem;
+    flex: 1;
+  }
+
+  .partner-body h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+    font-weight: 400;
+  }
+  .p-neighborhood {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    margin-bottom: 0.3rem;
+  }
+  .p-address {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+    line-height: 1.4;
+  }
+  .p-notes {
+    font-size: 0.8rem;
+    color: var(--gold);
+    font-style: italic;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-serif);
+  }
+  .p-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .p-link {
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    transition: color 0.2s;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1px;
+  }
+  .p-link:hover { color: var(--text-bright); border-color: var(--text-bright); }
+
+  .partners-cta {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 3rem;
+    text-align: center;
+  }
+  .partners-cta h2 { font-size: clamp(1.6rem, 3vw, 2.25rem); margin-bottom: 0.75rem; }
+  .partners-cta p { color: var(--muted); font-family: var(--font-serif); font-size: 1.05rem; margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+</style>
