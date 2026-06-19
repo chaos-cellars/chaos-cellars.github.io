@@ -25,7 +25,7 @@ const currentPath = Astro.url.pathname;
     <nav>
       <a href="/" class:list={["nav-link", { active: currentPath === "/" }]}>Home</a>
       <a href="/events" class:list={["nav-link", { active: currentPath.startsWith("/events") }]}>Events</a>
-      <a href="/partners" class:list={["nav-link", { active: currentPath.startsWith("/partners") }]}>Distribution</a>
+      <a href="/partners" class:list={["nav-link", { active: currentPath.startsWith("/partners") }]}>Find Our Wines</a>
       <a href="/about" class:list={["nav-link", { active: currentPath.startsWith("/about") }]}>About</a>
     </nav>
     <button class="nav-toggle" aria-label="Toggle menu" onclick="this.closest('header').classList.toggle('open')">
