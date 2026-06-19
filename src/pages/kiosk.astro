@@ -1,0 +1,431 @@
+---
+// Standalone kiosk page — no nav/footer, fullscreen iPad display
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Chaos Cellars" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Chaos Cellars</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="bg-photo" aria-hidden="true"></div>
+  <div class="bg-overlay" aria-hidden="true"></div>
+
+  <div class="kiosk">
+
+    <!-- Header -->
+    <header class="k-header">
+      <img src="/Logos/ChaosCellars-PrimaryLogo-Green.png" alt="Chaos Cellars" class="k-logo" />
+      <p class="k-tagline">Small-lot natural wines &nbsp;·&nbsp; Finger Lakes, NY</p>
+    </header>
+
+    <!-- Main: two columns -->
+    <main class="k-main">
+
+      <!-- Left: Instagram / QR -->
+      <div class="k-panel k-panel--ig">
+        <div class="k-panel-label">
+          <svg class="ig-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#f09433"/>
+                <stop offset="25%" stop-color="#e6683c"/>
+                <stop offset="50%" stop-color="#dc2743"/>
+                <stop offset="75%" stop-color="#cc2366"/>
+                <stop offset="100%" stop-color="#bc1888"/>
+              </linearGradient>
+            </defs>
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" stroke="url(#ig-grad)" stroke-width="1.75"/>
+            <circle cx="12" cy="12" r="4" stroke="url(#ig-grad)" stroke-width="1.75"/>
+            <circle cx="17.5" cy="6.5" r="0.9" fill="url(#ig-grad)"/>
+          </svg>
+          <span class="k-panel-heading">Follow Us</span>
+        </div>
+
+        <div class="k-qr-wrap">
+          <img src="/QR-Codes/Instagram.png" alt="Scan to follow Chaos Cellars on Instagram" class="k-qr" />
+        </div>
+
+        <p class="k-handle">@chaoscellars</p>
+        <p class="k-scan-cta">Scan the code to follow us on Instagram</p>
+        <p class="k-scan-sub">Behind-the-scenes, new releases &amp; events</p>
+      </div>
+
+      <!-- Divider -->
+      <div class="k-divider" aria-hidden="true"></div>
+
+      <!-- Right: Email signup -->
+      <div class="k-panel k-panel--email">
+        <div class="k-panel-label">
+          <svg class="email-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="M2 7l10 7 10-7"/>
+          </svg>
+          <span class="k-panel-heading">Stay in the Know</span>
+        </div>
+
+        <p class="k-email-intro">
+          Join our mailing list and be the first to hear about new releases, upcoming events, and what's happening in the cellar.
+        </p>
+
+        <iframe name="mc-iframe" style="display:none" aria-hidden="true"></iframe>
+        <form
+          id="mc-form"
+          class="k-form"
+          action="https://chaos-cellars.us19.list-manage.com/subscribe/post"
+          method="POST"
+          target="mc-iframe"
+        >
+          <input type="hidden" name="u" value="bfe6440c4c375aa3cc2920f7d" />
+          <input type="hidden" name="id" value="263dc2ba00" />
+          <div aria-hidden="true" style="position:absolute;left:-5000px">
+            <input type="text" name="b_bfe6440c4c375aa3cc2920f7d_263dc2ba00" tabindex="-1" value="" />
+          </div>
+          <input
+            type="email"
+            id="kiosk-email"
+            name="EMAIL"
+            class="k-input"
+            placeholder="your@email.com"
+            required
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+          />
+          <button type="submit" class="k-btn">Join &rarr;</button>
+        </form>
+
+        <p class="k-status" id="k-status" aria-live="polite">No spam, ever. Unsubscribe any time.</p>
+
+        <div class="k-wine-note">
+          <span class="k-wine-dot"></span>
+          Wine rooted in tradition and inspired by curiosity
+          <span class="k-wine-dot"></span>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="k-footer">
+      <span>chaos-cellars.com</span>
+    </footer>
+
+  </div>
+
+</body>
+</html>
+
+<script is:inline>
+  const form = document.getElementById('mc-form');
+  const status = document.getElementById('k-status');
+  const emailInput = document.getElementById('kiosk-email');
+
+  form?.addEventListener('submit', () => {
+    if (status) {
+      status.textContent = "You're on the list — thank you!";
+      status.classList.add('is-success');
+    }
+    setTimeout(() => {
+      form.reset();
+      if (status) {
+        status.textContent = 'No spam, ever. Unsubscribe any time.';
+        status.classList.remove('is-success');
+      }
+      emailInput?.blur();
+    }, 3500);
+  });
+</script>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black:       #0b0d09;
+    --surface:     #131610;
+    --surface-2:   #1a1f15;
+    --border:      rgba(255,255,255,0.10);
+    --text:        #d4cfc4;
+    --text-bright: #f5f0e8;
+    --muted:       #7a7568;
+    --green-dark:  #3a5c2e;
+    --green-mid:   #6a9a58;
+    --green-light: #a8c897;
+    --gold:        #c9a84c;
+    --font-serif:  'Cormorant Garamond', Georgia, serif;
+    --font-sans:   'Inter', system-ui, sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: var(--black);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Background photo with dark overlay */
+  .bg-photo {
+    position: fixed;
+    inset: 0;
+    background-image: url('/Images/IMG_8604.jpg');
+    background-size: cover;
+    background-position: center 40%;
+    z-index: 0;
+  }
+  .bg-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(
+      160deg,
+      rgba(8, 12, 6, 0.91) 0%,
+      rgba(12, 18, 8, 0.86) 50%,
+      rgba(6, 10, 5, 0.93) 100%
+    );
+    z-index: 1;
+  }
+
+  /* Kiosk wrapper */
+  .kiosk {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    padding: 0 2.5rem;
+  }
+
+  /* ── Header ── */
+  .k-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.75rem 0 1.4rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .k-logo {
+    height: 72px;
+    width: auto;
+    object-fit: contain;
+  }
+  .k-tagline {
+    margin-top: 0.5rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--font-sans);
+  }
+
+  /* ── Main two-column ── */
+  .k-main {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .k-divider {
+    background: var(--border);
+    margin: 2rem 0;
+  }
+
+  .k-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 2.5rem;
+    text-align: center;
+    gap: 0;
+  }
+
+  /* ── Panel label row ── */
+  .k-panel-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+  .k-panel-heading {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: var(--text-bright);
+    letter-spacing: 0.03em;
+  }
+  .ig-icon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+  .email-icon {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    color: var(--green-light);
+  }
+
+  /* ── QR panel ── */
+  .k-qr-wrap {
+    background: #fff;
+    padding: 0.85rem;
+    border-radius: 4px;
+    margin-bottom: 1.4rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .k-qr {
+    display: block;
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+  }
+  .k-handle {
+    font-family: var(--font-serif);
+    font-size: 1.55rem;
+    font-weight: 300;
+    color: var(--text-bright);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.04em;
+  }
+  .k-scan-cta {
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    margin-bottom: 0.35rem;
+  }
+  .k-scan-sub {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.5;
+    max-width: 220px;
+  }
+
+  /* ── Email panel ── */
+  .k-email-intro {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: var(--muted);
+    line-height: 1.65;
+    margin-bottom: 1.75rem;
+    max-width: 300px;
+  }
+
+  .k-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 1rem;
+  }
+  .k-input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--text-bright);
+    font-family: var(--font-sans);
+    font-size: 1.05rem;
+    padding: 1rem 1.25rem;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  .k-input::placeholder { color: var(--muted); }
+  .k-input:focus { border-color: var(--green-mid); }
+
+  .k-btn {
+    width: 100%;
+    background: var(--green-dark);
+    color: #f5f0e8;
+    border: none;
+    border-radius: 2px;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    -webkit-appearance: none;
+    touch-action: manipulation;
+  }
+  .k-btn:active { background: #2d4a24; transform: scale(0.98); }
+
+  .k-status {
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    transition: color 0.3s;
+    min-height: 1.1em;
+    margin-bottom: 1.75rem;
+  }
+  .k-status.is-success { color: var(--green-light); }
+
+  .k-wine-note {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-family: var(--font-serif);
+    font-size: 0.88rem;
+    font-style: italic;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+  .k-wine-dot {
+    display: inline-block;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--green-dark);
+    flex-shrink: 0;
+  }
+
+  /* ── Footer ── */
+  .k-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .k-footer span {
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Landscape fallback (iPad in landscape) */
+  @media (orientation: landscape) and (max-height: 820px) {
+    .k-header { padding: 1.1rem 0 0.9rem; }
+    .k-logo { height: 52px; }
+    .k-tagline { font-size: 0.66rem; margin-top: 0.3rem; }
+    .k-panel { padding: 1.25rem 2rem; }
+    .k-qr { width: 155px; height: 155px; }
+    .k-handle { font-size: 1.3rem; }
+    .k-panel-heading { font-size: 1.3rem; }
+    .k-email-intro { font-size: 0.95rem; margin-bottom: 1.1rem; }
+    .k-btn, .k-input { padding: 0.75rem 1.25rem; font-size: 0.95rem; }
+    .k-status { margin-bottom: 1rem; }
+    .k-wine-note { font-size: 0.78rem; }
+  }
+</style>
