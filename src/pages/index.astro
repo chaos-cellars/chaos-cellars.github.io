@@ -73,7 +73,12 @@ const upcoming = events.slice(0, 2);
           <span class="eyebrow-label">2026 Recognition</span>
           <h2>Award-Winning Wines</h2>
         </div>
-        <p class="awards-intro">Our 2024 vintage earned Bronze medals at the <a href="https://fliwc-cgd.com/" target="_blank" rel="noopener" class="awards-link">Camp Good Days Finger Lakes International Wine &amp; Spirits Competition</a>.</p>
+        <div class="awards-head-right">
+          <p class="awards-intro">Our 2024 vintage earned Bronze medals at the <a href="https://fliwc-cgd.com/" target="_blank" rel="noopener" class="awards-link">Camp Good Days Finger Lakes International Wine &amp; Spirits Competition</a>.</p>
+          <a href="https://fliwc-cgd.com/" target="_blank" rel="noopener" class="fliwc-logo-link">
+            <img src="/Images/FLIWC%20Logl.png" alt="Camp Good Days Finger Lakes International Wine & Spirits Competition logo" class="fliwc-logo" />
+          </a>
+        </div>
       </div>
       <div class="awards-grid">
         <div class="awards-img-wrap">
@@ -357,6 +362,12 @@ const upcoming = events.slice(0, 2);
     flex-wrap: wrap;
   }
   .awards-head h2 { font-size: clamp(2rem, 4vw, 3rem); }
+  .awards-head-right {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    align-items: flex-start;
+  }
   .awards-intro {
     max-width: 380px;
     font-family: var(--font-serif);
@@ -366,6 +377,13 @@ const upcoming = events.slice(0, 2);
     line-height: 1.65;
     padding-bottom: 0.2rem;
   }
+  .fliwc-logo {
+    height: 72px;
+    width: auto;
+    opacity: 0.85;
+    transition: opacity 0.2s;
+  }
+  .fliwc-logo-link:hover .fliwc-logo { opacity: 1; }
   .awards-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -401,8 +419,8 @@ const upcoming = events.slice(0, 2);
     font-size: 0.65rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--black);
-    background: var(--gold);
+    color: #fdf8f2;
+    background: #9e5040;
     padding: 0.35rem 0.65rem;
     font-weight: 700;
     margin-top: 0.15rem;
@@ -427,13 +445,13 @@ const upcoming = events.slice(0, 2);
     line-height: 1.6;
   }
   .awards-link {
-    color: var(--gold);
+    color: #9e5040;
     text-decoration: underline;
     text-underline-offset: 3px;
     text-decoration-color: transparent;
     transition: text-decoration-color 0.2s;
   }
-  .awards-link:hover { text-decoration-color: var(--gold); }
+  .awards-link:hover { text-decoration-color: #9e5040; }
   @media (max-width: 720px) {
     .awards-grid { grid-template-columns: 1fr; }
     .awards-head { flex-direction: column; align-items: flex-start; }
