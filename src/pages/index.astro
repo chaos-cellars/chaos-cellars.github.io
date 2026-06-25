@@ -73,7 +73,7 @@ const upcoming = events.slice(0, 2);
           <span class="eyebrow-label">2026 Recognition</span>
           <h2>Award-Winning Wines</h2>
         </div>
-        <p class="awards-intro">Our 2024 vintage earned Bronze medals at the Camp Good Days Finger Lakes International Wine &amp; Spirits Competition.</p>
+        <p class="awards-intro">Our 2024 vintage earned Bronze medals at the <a href="https://fliwc-cgd.com/" target="_blank" rel="noopener" class="awards-link">Camp Good Days Finger Lakes International Wine &amp; Spirits Competition</a>.</p>
       </div>
       <div class="awards-grid">
         <div class="awards-img-wrap">
@@ -85,7 +85,7 @@ const upcoming = events.slice(0, 2);
             <div class="award-info">
               <span class="award-class">Class: Vignoles</span>
               <h3>2024 Vignoles</h3>
-              <p>Camp Good Days Finger Lakes International Wine &amp; Spirits Competition</p>
+              <p><a href="https://fliwc-cgd.com/" target="_blank" rel="noopener" class="awards-link">Camp Good Days Finger Lakes International Wine &amp; Spirits Competition</a></p>
             </div>
           </div>
           <div class="award-item">
@@ -93,7 +93,7 @@ const upcoming = events.slice(0, 2);
             <div class="award-info">
               <span class="award-class">Class: Rosé / Blush / Pink / Orange / Amber</span>
               <h3>2024 Dry Rosé</h3>
-              <p>Camp Good Days Finger Lakes International Wine &amp; Spirits Competition</p>
+              <p><a href="https://fliwc-cgd.com/" target="_blank" rel="noopener" class="awards-link">Camp Good Days Finger Lakes International Wine &amp; Spirits Competition</a></p>
             </div>
           </div>
         </div>
@@ -426,6 +426,14 @@ const upcoming = events.slice(0, 2);
     color: var(--muted);
     line-height: 1.6;
   }
+  .awards-link {
+    color: var(--gold);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: transparent;
+    transition: text-decoration-color 0.2s;
+  }
+  .awards-link:hover { text-decoration-color: var(--gold); }
   @media (max-width: 720px) {
     .awards-grid { grid-template-columns: 1fr; }
     .awards-head { flex-direction: column; align-items: flex-start; }
