@@ -55,6 +55,9 @@ function formatDate(dateStr: string) {
                   ) : event.ticket_url ? (
                     <a href={event.ticket_url} class="btn btn-primary">Get Tickets</a>
                   ) : null}
+                  {event.instagram_url && (
+                    <a href={event.instagram_url} class="btn btn-ghost" target="_blank" rel="noopener">View on Instagram</a>
+                  )}
                   {event.flyer && (
                     <button class="btn btn-ghost flyer-btn" data-flyer={event.flyer} data-title={event.title}>
                       View Flyer

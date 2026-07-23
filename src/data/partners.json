@@ -17,6 +17,15 @@
       "logo": "/Distribution/Funk and Fermentation.jpg",
       "phone": "",
       "website": ""
+    },
+    {
+      "id": 3,
+      "name": "Bonesteel Wines",
+      "neighborhood": "Victor, NY",
+      "address": "236 High Street Ext, Victor, NY 14564",
+      "logo": "/Distribution/Bonesteel Wines.png",
+      "phone": "",
+      "website": ""
     }
   ],
   "on_premise": [
