@@ -7,7 +7,8 @@
       "address": "132 Water St., Penn Yan, NY 14527",
       "logo": "/Distribution/Water Street Wines & Spirits.jpg",
       "phone": "",
-      "website": ""
+      "website": "https://waterstreetwinesandspirits.com/",
+      "instagram": "https://www.instagram.com/waterstreetwines/"
     },
     {
       "id": 2,
@@ -16,7 +17,8 @@
       "address": "587 West Delevan Ave., Buffalo, NY 14222",
       "logo": "/Distribution/Funk and Fermentation.jpg",
       "phone": "",
-      "website": ""
+      "website": "https://funkandfermentation.com/",
+      "instagram": "https://www.instagram.com/funkandfermentation/"
     },
     {
       "id": 3,
@@ -25,7 +27,18 @@
       "address": "236 High Street Ext, Victor, NY 14564",
       "logo": "/Distribution/Bonesteel Wines.png",
       "phone": "",
-      "website": ""
+      "website": "",
+      "instagram": "https://www.instagram.com/bonesteelbottleshop/"
+    },
+    {
+      "id": 4,
+      "name": "Aurora Liquor",
+      "neighborhood": "East Aurora, NY",
+      "address": "123 Grey Street, Suite 17, East Aurora, NY 14052",
+      "logo": "/Distribution/Aurora Liquor.png",
+      "phone": "",
+      "website": "",
+      "instagram": "https://www.instagram.com/auroraliquorinc/"
     }
   ],
   "on_premise": [
@@ -37,7 +50,8 @@
       "logo": "/Distribution/Mystic Hills Brewing.jpg",
       "notes": "Available by the glass",
       "phone": "",
-      "website": ""
+      "website": "https://www.mystic-hills-brewing.com/",
+      "instagram": "https://www.instagram.com/mystichillsbrewing/"
     }
   ]
 }

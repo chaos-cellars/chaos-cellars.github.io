@@ -38,6 +38,9 @@ import partners from '../data/partners.json';
                   {shop.website && shop.website !== '#' && (
                     <a href={shop.website} class="p-link" target="_blank" rel="noopener">Website</a>
                   )}
+                  {shop.instagram && (
+                    <a href={shop.instagram} class="p-link" target="_blank" rel="noopener">Instagram</a>
+                  )}
                 </div>
               </div>
             </article>
@@ -69,6 +72,9 @@ import partners from '../data/partners.json';
                   )}
                   {bar.website && bar.website !== '#' && (
                     <a href={bar.website} class="p-link" target="_blank" rel="noopener">Website</a>
+                  )}
+                  {bar.instagram && (
+                    <a href={bar.instagram} class="p-link" target="_blank" rel="noopener">Instagram</a>
                   )}
                 </div>
               </div>
