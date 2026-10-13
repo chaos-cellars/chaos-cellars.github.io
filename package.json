@@ -9,7 +9,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.18.2"
+    "astro": "^5.18.2",
+    "ical.js": "^2.2.1"
   },
   "devDependencies": {
     "playwright": "^1.61.0"

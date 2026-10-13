@@ -1,8 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import events from '../data/events.json';
+import { getUpcomingEvents, dateParts, timeLabel } from '../lib/events';
 
-const upcoming = events.slice(0, 2);
+const upcoming = (await getUpcomingEvents()).slice(0, 3);
 ---
 <Layout title="Home" description="Chaos Cellars — Where great ideas emerge from creative chaos. Small-lot natural wines from the Finger Lakes, NY.">
 
@@ -144,25 +144,26 @@ const upcoming = events.slice(0, 2);
       </div>
       <div class="teaser-grid">
         {upcoming.map(event => {
-          const d = new Date(event.date + 'T12:00:00');
-          const month = d.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-          const day = d.getDate();
+          const d = dateParts(event);
           return (
-            <article class="teaser-card">
+            <a href="/events" class="teaser-card" data-end={event.end}>
               <div class="teaser-date">
-                <span class="t-month">{month}</span>
-                <span class="t-day">{day}</span>
+                <span class="t-month">{d.shortMonth}</span>
+                <span class="t-day">{d.day}</span>
               </div>
               <div class="teaser-body">
-                <p class="t-location">{event.location}</p>
+                <p class="t-location">{event.venue || event.address}</p>
                 <h3>{event.title}</h3>
-                <p class="t-time">{event.time}</p>
-                <p class="t-desc">{event.description}</p>
+                <p class="t-time">{d.weekday} · {timeLabel(event)}</p>
+                {event.description[0] && <p class="t-desc">{event.description[0]}</p>}
               </div>
-            </article>
+            </a>
           );
         })}
       </div>
+      <p class="teaser-empty" hidden={upcoming.length > 0}>
+        Nothing on the calendar right now. New dates are coming — in the meantime, <a href="/partners">find a bottle near you</a>.
+      </p>
       <div class="teaser-cta">
         <a href="/events" class="btn btn-ghost">View All Events</a>
       </div>
@@ -491,6 +492,7 @@ const upcoming = events.slice(0, 2);
     margin-bottom: 2.5rem;
   }
   .teaser-card {
+    color: inherit;
     display: flex;
     gap: 1.5rem;
     padding: 2rem;
@@ -530,7 +532,7 @@ const upcoming = events.slice(0, 2);
   }
   .t-time {
     font-size: 0.8rem;
-    color: var(--gold);
+    color: var(--wine);
     margin-bottom: 0.75rem;
   }
   .t-desc {
@@ -538,6 +540,10 @@ const upcoming = events.slice(0, 2);
     color: var(--muted);
     line-height: 1.6;
   }
+  .teaser-grid:empty { display: none; }
+  .teaser-empty { text-align: center; font-family: var(--font-serif); font-size: 1.15rem; color: var(--muted); margin-bottom: 2.5rem; }
+  .teaser-empty[hidden] { display: none; }
+  .teaser-empty a { color: var(--green-dark); text-decoration: underline; }
   .teaser-cta { text-align: center; }
 
   /* ── Email Signup ── */
@@ -710,6 +716,13 @@ const upcoming = events.slice(0, 2);
 </style>
 
 <script>
+  // Hide teaser events that have ended since the last hourly build.
+  document.querySelectorAll<HTMLElement>('.teaser-card[data-end]').forEach((card) => {
+    if (Date.parse(card.dataset.end ?? '') <= Date.now()) card.remove();
+  });
+  const teaserEmpty = document.querySelector<HTMLElement>('.teaser-empty');
+  if (teaserEmpty && !document.querySelector('.teaser-card')) teaserEmpty.hidden = false;
+
   const form = document.getElementById('mc-form') as HTMLFormElement | null;
   const status = document.getElementById('mc-status') as HTMLElement | null;
 

@@ -1,0 +1,5 @@
+{
+  "_help": "Where the site pulls live content from at build time. Leave a value empty to fall back to events.json / partners.json.",
+  "eventsCalendarId": "",
+  "partnersSheetCsvUrl": ""
+}

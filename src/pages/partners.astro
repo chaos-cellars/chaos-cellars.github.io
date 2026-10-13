@@ -1,87 +1,86 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import partners from '../data/partners.json';
+import { getPartners } from '../lib/partners';
+import { getUpcomingEvents, dateParts } from '../lib/events';
+
+const partners = await getPartners();
+const shops = partners.filter((p) => p.kind === 'shop').length;
+const pours = partners.length - shops;
+const nextEvent = (await getUpcomingEvents())[0];
+const next = nextEvent && dateParts(nextEvent);
+
+const initials = (name: string) =>
+  name.split(/\s+/).filter((w) => /^[A-Za-z0-9]/.test(w)).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
 ---
-<Layout title="Find Our Wines" description="Find Chaos Cellars wines at these select shops and locations across New York.">
+<Layout title="Find Our Wines" description="Where to buy or drink Chaos Cellars wines: bottle shops, bars and restaurants across New York.">
 
   <div class="page-header">
     <span class="eyebrow">Where to Find Us</span>
     <h1>Find Our Wines</h1>
-    <p>A carefully chosen group of shops and spots who believe in the same kind of wine we do.</p>
+    <p>Grab a bottle to take home, or order a glass at one of the spots pouring us right now.</p>
   </div>
 
   <section class="section">
     <div class="container">
 
-      <div class="partners-block">
-        <div class="block-head">
-          <span class="block-label">Wine Shops</span>
-          <span class="block-count">{partners.wine_stores.length} locations</span>
+      <div class="finder" role="search">
+        <div class="filter-chips" role="group" aria-label="Filter by type">
+          <button type="button" class="chip is-active" data-filter="all" aria-pressed="true">All <span>{partners.length}</span></button>
+          {shops > 0 && <button type="button" class="chip" data-filter="shop" aria-pressed="false">Take a bottle home <span>{shops}</span></button>}
+          {pours > 0 && <button type="button" class="chip" data-filter="pour" aria-pressed="false">By the glass <span>{pours}</span></button>}
         </div>
-        <div class="partners-grid">
-          {partners.wine_stores.map(shop => (
-            <article class="partner-card">
-              {shop.logo && (
-                <div class="partner-logo-wrap">
-                  <img src={shop.logo} alt={shop.name + ' logo'} class="partner-logo" />
-                </div>
-              )}
-              <div class="partner-body">
-                <h3>{shop.name}</h3>
-                <p class="p-neighborhood">{shop.neighborhood}</p>
-                <p class="p-address">{shop.address}</p>
-                {shop.notes && <p class="p-notes">{shop.notes}</p>}
-                <div class="p-links">
-                  {shop.phone && (
-                    <a href={`tel:${shop.phone.replace(/\D/g,'')}`} class="p-link">{shop.phone}</a>
-                  )}
-                  {shop.website && shop.website !== '#' && (
-                    <a href={shop.website} class="p-link" target="_blank" rel="noopener">Website</a>
-                  )}
-                  {shop.instagram && (
-                    <a href={shop.instagram} class="p-link" target="_blank" rel="noopener">Instagram</a>
-                  )}
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+        <label class="search">
+          <span class="sr-only">Search by town or name</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input type="search" id="partnerSearch" placeholder="Search by town or name" autocomplete="off" />
+        </label>
       </div>
 
-      <div class="partners-block">
-        <div class="block-head">
-          <span class="block-label">On Premise</span>
-          <span class="block-count">By the glass</span>
-        </div>
-        <div class="partners-grid">
-          {partners.on_premise.map(bar => (
-            <article class="partner-card">
-              {bar.logo && (
-                <div class="partner-logo-wrap">
-                  <img src={bar.logo} alt={bar.name + ' logo'} class="partner-logo" />
-                </div>
-              )}
-              <div class="partner-body">
-                <h3>{bar.name}</h3>
-                <p class="p-neighborhood">{bar.neighborhood}</p>
-                <p class="p-address">{bar.address}</p>
-                {bar.notes && <p class="p-notes">{bar.notes}</p>}
+      <div class="partners-grid" id="partnersGrid">
+        {partners.map((p) => (
+          <article
+            class="partner-card"
+            data-kind={p.kind}
+            data-search={`${p.name} ${p.town} ${p.address}`.toLowerCase()}
+          >
+            <div class="partner-logo-wrap">
+              {p.logo
+                ? <img src={p.logo} alt={`${p.name} logo`} class="partner-logo" loading="lazy" />
+                : <span class="monogram" aria-hidden="true">{initials(p.name)}</span>}
+            </div>
+            <div class="partner-body">
+              <span class:list={['kind-tag', p.kind]}>{p.kind === 'pour' ? 'By the glass' : 'Bottle shop'}</span>
+              <h3>{p.name}</h3>
+              {p.town && <p class="p-town">{p.town}</p>}
+              {p.address && <p class="p-address">{p.address}</p>}
+              {p.notes && <p class="p-notes">{p.notes}</p>}
+              <div class="p-actions">
+                <a href={p.mapsUrl} class="btn btn-ghost p-directions" target="_blank" rel="noopener">Directions</a>
                 <div class="p-links">
-                  {bar.phone && (
-                    <a href={`tel:${bar.phone.replace(/\D/g,'')}`} class="p-link">{bar.phone}</a>
-                  )}
-                  {bar.website && bar.website !== '#' && (
-                    <a href={bar.website} class="p-link" target="_blank" rel="noopener">Website</a>
-                  )}
-                  {bar.instagram && (
-                    <a href={bar.instagram} class="p-link" target="_blank" rel="noopener">Instagram</a>
-                  )}
+                  {p.phone && <a href={`tel:${p.phone.replace(/[^\d+]/g, '')}`} class="p-link">Call</a>}
+                  {p.website && <a href={p.website} class="p-link" target="_blank" rel="noopener">Website</a>}
+                  {p.instagram && <a href={p.instagram} class="p-link" target="_blank" rel="noopener">Instagram</a>}
                 </div>
               </div>
-            </article>
-          ))}
-        </div>
+            </div>
+          </article>
+        ))}
       </div>
+
+      <p class="no-results" id="noResults" hidden>
+        No spots match that search yet. <a href="mailto:chaos-cellars@outlook.com">Tell us where you'd like to find us</a> and we'll see what we can do.
+      </p>
+
+      {nextEvent && next && (
+        <a href="/events" class="next-event" data-end={nextEvent.end}>
+          <span class="ne-date"><span>{next.shortMonth}</span>{next.day}</span>
+          <span class="ne-copy">
+            <span class="ne-label">Taste with us first</span>
+            <span class="ne-title">{nextEvent.title}{nextEvent.venue ? ` · ${nextEvent.venue}` : ''}</span>
+          </span>
+          <span class="ne-arrow" aria-hidden="true">→</span>
+        </a>
+      )}
 
       <div class="partners-cta">
         <h2>Want to carry our wines?</h2>
@@ -94,115 +93,220 @@ import partners from '../data/partners.json';
 
 </Layout>
 
+<script>
+  const cards = [...document.querySelectorAll<HTMLElement>('.partner-card')];
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('.chip')];
+  const search = document.getElementById('partnerSearch') as HTMLInputElement;
+  const noResults = document.getElementById('noResults') as HTMLElement;
+  let kind = 'all';
+
+  function apply() {
+    const q = search.value.trim().toLowerCase();
+    let shown = 0;
+    for (const c of cards) {
+      const ok = (kind === 'all' || c.dataset.kind === kind) && (!q || (c.dataset.search ?? '').includes(q));
+      c.hidden = !ok;
+      if (ok) shown++;
+    }
+    noResults.hidden = shown > 0;
+  }
+
+  chips.forEach((chip) =>
+    chip.addEventListener('click', () => {
+      kind = chip.dataset.filter ?? 'all';
+      chips.forEach((c) => {
+        c.classList.toggle('is-active', c === chip);
+        c.setAttribute('aria-pressed', String(c === chip));
+      });
+      apply();
+    }),
+  );
+  search.addEventListener('input', apply);
+
+  const ne = document.querySelector<HTMLElement>('.next-event[data-end]');
+  if (ne && Date.parse(ne.dataset.end ?? '') <= Date.now()) ne.remove();
+</script>
+
 <style>
-  .partners-block { margin-bottom: 4.5rem; }
-  .block-head {
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .finder {
     display: flex;
-    align-items: baseline;
+    flex-wrap: wrap;
     gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1.75rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border);
   }
-  .block-label {
-    font-family: var(--font-serif);
-    font-size: 1.75rem;
-    font-weight: 300;
-    color: var(--text-bright);
-  }
-  .block-count {
-    font-size: 0.72rem;
-    letter-spacing: 0.15em;
+  .filter-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip {
+    font: inherit;
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--green-mid);
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .chip span { color: var(--muted); margin-left: 0.3rem; }
+  .chip:hover { border-color: var(--green-dark); }
+  .chip.is-active { background: var(--green-dark); border-color: var(--green-dark); color: var(--black); }
+  .chip.is-active span { color: var(--green-light); }
+
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0 0.85rem;
+    color: var(--muted);
+    flex: 0 1 300px;
+  }
+  .search:focus-within { border-color: var(--green-dark); }
+  .search input {
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-size: 16px; /* prevents iOS zoom on focus */
+    color: var(--text-bright);
+    padding: 0.6rem 0;
+    width: 100%;
+    outline: none;
   }
 
   .partners-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5px;
-    background: var(--border);
-    border: 1px solid var(--border);
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
   }
 
   .partner-card {
     background: var(--surface);
+    border: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    transition: background 0.2s;
-    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
   }
-  .partner-card:hover { background: var(--surface-2); }
+  .partner-card:hover { border-color: var(--green-mid); transform: translateY(-2px); }
+  .partner-card[hidden] { display: none; }
 
   .partner-logo-wrap {
-    width: 100%;
-    height: 110px;
+    height: 120px;
     border-bottom: 1px solid var(--border);
-    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--surface-2);
+    background: #fdfaf3;
   }
-  .partner-logo {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-    padding: 1rem 1.5rem;
+  .partner-logo { width: 100%; height: 100%; object-fit: contain; padding: 1rem 1.5rem; }
+  .monogram {
+    font-family: var(--font-serif);
+    font-size: 2.6rem;
+    color: var(--green-dark);
+    letter-spacing: 0.05em;
   }
 
   .partner-body {
-    padding: 1.25rem 1.75rem 1.75rem;
+    padding: 1.25rem 1.5rem 1.5rem;
     flex: 1;
+    display: flex;
+    flex-direction: column;
   }
-
-  .partner-body h3 {
-    font-size: 1.1rem;
-    margin-bottom: 0.2rem;
-    font-weight: 400;
+  .kind-tag {
+    align-self: flex-start;
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 0.2rem 0.5rem;
+    margin-bottom: 0.6rem;
   }
-  .p-neighborhood {
+  .kind-tag.shop { background: rgba(122, 139, 107, 0.18); color: var(--green-dark); }
+  .kind-tag.pour { background: rgba(184, 92, 71, 0.14); color: var(--wine); }
+  .partner-body h3 { font-size: 1.35rem; font-weight: 400; margin-bottom: 0.2rem; }
+  .p-town {
     font-size: 0.72rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--green-mid);
     margin-bottom: 0.3rem;
   }
-  .p-address {
-    font-size: 0.82rem;
-    color: var(--muted);
-    margin-bottom: 0.4rem;
-    line-height: 1.4;
-  }
+  .p-address { font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
   .p-notes {
-    font-size: 0.8rem;
-    color: var(--gold);
-    font-style: italic;
-    margin-bottom: 0.75rem;
     font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.98rem;
+    color: var(--text);
+    margin-top: 0.5rem;
   }
-  .p-links {
+  .p-actions {
+    margin-top: auto;
+    padding-top: 1.1rem;
     display: flex;
+    align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
   }
+  .p-directions { padding: 0.6rem 1.1rem; font-size: 0.7rem; }
+  .p-links { display: flex; gap: 0.9rem; flex-wrap: wrap; }
   .p-link {
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
+    font-size: 0.78rem;
     color: var(--muted);
-    transition: color 0.2s;
     border-bottom: 1px solid var(--border);
     padding-bottom: 1px;
+    transition: color 0.2s, border-color 0.2s;
   }
   .p-link:hover { color: var(--text-bright); border-color: var(--text-bright); }
 
+  .no-results {
+    text-align: center;
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: var(--muted);
+    padding: 2.5rem 1rem;
+  }
+  .no-results[hidden] { display: none; }
+  .no-results a { color: var(--green-dark); text-decoration: underline; }
+
+  .next-event {
+    margin-top: 3rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.1rem 1.5rem;
+    background: var(--green-dark);
+    color: var(--black);
+    transition: background 0.2s;
+  }
+  .next-event:hover { background: #3d4e30; }
+  .ne-date {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    line-height: 1;
+    text-align: center;
+    min-width: 3rem;
+  }
+  .ne-date span { display: block; font-family: var(--font-sans); font-size: 0.6rem; letter-spacing: 0.15em; color: var(--green-light); margin-bottom: 0.15rem; }
+  .ne-copy { flex: 1; min-width: 0; }
+  .ne-label { display: block; font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--green-light); }
+  .ne-title { display: block; font-family: var(--font-serif); font-size: 1.3rem; }
+  .ne-arrow { font-size: 1.4rem; }
+
   .partners-cta {
+    margin-top: 3rem;
     border: 1px solid var(--border);
     background: var(--surface);
-    padding: 3rem;
+    padding: clamp(2rem, 5vw, 3rem);
     text-align: center;
   }
   .partners-cta h2 { font-size: clamp(1.6rem, 3vw, 2.25rem); margin-bottom: 0.75rem; }
-  .partners-cta p { color: var(--muted); font-family: var(--font-serif); font-size: 1.05rem; margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+  .partners-cta p { color: var(--muted); font-family: var(--font-serif); font-size: 1.05rem; margin: 0 auto 2rem; max-width: 480px; }
+
+  @media (max-width: 700px) {
+    .search { flex-basis: 100%; }
+    .partners-grid { grid-template-columns: 1fr; }
+  }
 </style>

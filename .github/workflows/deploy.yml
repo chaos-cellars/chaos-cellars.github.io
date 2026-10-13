@@ -3,12 +3,17 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Rebuild hourly so new/edited calendar events and partner-sheet rows go live,
+  # and past events drop off, without anyone touching the code.
+  schedule:
+    - cron: '17 * * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
+  actions: write # lets the keep-alive step below re-enable the hourly schedule
 
 concurrency:
   group: pages
@@ -38,3 +43,18 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # GitHub pauses scheduled workflows after 60 days with no commits. Re-enabling
+  # the workflow through the API once a week resets that clock.
+  keep-alive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Re-enable hourly schedule (weekly)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Only once a week (Mondays, first run after midnight UTC) to stay quiet.
+          if [ "$(date -u +%u)" = "1" ] && [ "$(date -u +%H)" = "00" ]; then
+            gh api -X PUT "repos/${{ github.repository }}/actions/workflows/deploy.yml/enable"
+          fi
