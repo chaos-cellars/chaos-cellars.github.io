@@ -1,5 +1,5 @@
 {
   "_help": "Where the site pulls live content from at build time. Leave a value empty to fall back to events.json / partners.json.",
-  "eventsCalendarId": "",
+  "eventsCalendarId": "55fd4795ed0cf20801da5c5d00c288755e3ce457fb17fca118c6fdfc27374845@group.calendar.google.com",
   "partnersSheetCsvUrl": ""
 }
