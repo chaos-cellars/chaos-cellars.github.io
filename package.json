@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "astro": "^5.18.2",
-    "ical.js": "^2.2.1"
+    "ical.js": "^2.2.1",
+    "leaflet": "^1.9.4"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.22",
     "playwright": "^1.61.0"
   }
 }

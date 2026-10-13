@@ -29,6 +29,12 @@ jobs:
           node-version: 22.12
           cache: npm
       - run: npm ci
+      # Map coordinates for partner addresses, so each is only looked up once.
+      - uses: actions/cache@v4
+        with:
+          path: .cache
+          key: geocode-${{ github.run_id }}
+          restore-keys: geocode-
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -11,8 +11,13 @@ const next = nextEvent && dateParts(nextEvent);
 
 const initials = (name: string) =>
   name.split(/\s+/).filter((w) => /^[A-Za-z0-9]/.test(w)).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
+
+// Handed to the map script. Escape "<" so sheet content can't close the tag.
+const mapData = JSON.stringify(
+  partners.map((p, i) => ({ i, name: p.name, kind: p.kind, town: p.town, maps: p.mapsUrl, pin: p.pin })),
+).replace(/</g, '\\u003c');
 ---
-<Layout title="Find Our Wines" description="Where to buy or drink Chaos Cellars wines: bottle shops, bars and restaurants across New York.">
+<Layout title="Find Our Wines" description="Where to buy or drink Chaos Cellars wines: a map of bottle shops, bars and restaurants across New York.">
 
   <div class="page-header">
     <span class="eyebrow">Where to Find Us</span>
@@ -20,56 +25,71 @@ const initials = (name: string) =>
     <p>Grab a bottle to take home, or order a glass at one of the spots pouring us right now.</p>
   </div>
 
-  <section class="section">
+  <section class="section finder-section">
     <div class="container">
 
       <div class="finder" role="search">
         <div class="filter-chips" role="group" aria-label="Filter by type">
           <button type="button" class="chip is-active" data-filter="all" aria-pressed="true">All <span>{partners.length}</span></button>
-          {shops > 0 && <button type="button" class="chip" data-filter="shop" aria-pressed="false">Take a bottle home <span>{shops}</span></button>}
-          {pours > 0 && <button type="button" class="chip" data-filter="pour" aria-pressed="false">By the glass <span>{pours}</span></button>}
+          {shops > 0 && <button type="button" class="chip" data-filter="shop" aria-pressed="false"><i class="dot shop"></i>Bottle shops <span>{shops}</span></button>}
+          {pours > 0 && <button type="button" class="chip" data-filter="pour" aria-pressed="false"><i class="dot pour"></i>By the glass <span>{pours}</span></button>}
         </div>
-        <label class="search">
-          <span class="sr-only">Search by town or name</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-          <input type="search" id="partnerSearch" placeholder="Search by town or name" autocomplete="off" />
-        </label>
+        <div class="finder-right">
+          <label class="search">
+            <span class="sr-only">Search by town or name</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input type="search" id="partnerSearch" placeholder="Town or shop name" autocomplete="off" />
+          </label>
+          <button type="button" class="near-me" id="nearMe">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>
+            <span>Near me</span>
+          </button>
+        </div>
       </div>
+      <p class="near-status" id="nearStatus" aria-live="polite" hidden></p>
 
-      <div class="partners-grid" id="partnersGrid">
-        {partners.map((p) => (
-          <article
-            class="partner-card"
-            data-kind={p.kind}
-            data-search={`${p.name} ${p.town} ${p.address}`.toLowerCase()}
-          >
-            <div class="partner-logo-wrap">
-              {p.logo
-                ? <img src={p.logo} alt={`${p.name} logo`} class="partner-logo" loading="lazy" />
-                : <span class="monogram" aria-hidden="true">{initials(p.name)}</span>}
-            </div>
-            <div class="partner-body">
-              <span class:list={['kind-tag', p.kind]}>{p.kind === 'pour' ? 'By the glass' : 'Bottle shop'}</span>
-              <h3>{p.name}</h3>
-              {p.town && <p class="p-town">{p.town}</p>}
-              {p.address && <p class="p-address">{p.address}</p>}
-              {p.notes && <p class="p-notes">{p.notes}</p>}
-              <div class="p-actions">
-                <a href={p.mapsUrl} class="btn btn-ghost p-directions" target="_blank" rel="noopener">Directions</a>
-                <div class="p-links">
+      <div class="locator">
+        <div class="map-wrap">
+          <div id="partnerMap" class="partner-map" aria-label="Map of places that carry Chaos Cellars wine"></div>
+        </div>
+
+        <ol class="partner-list" id="partnerList">
+          {partners.map((p, i) => (
+            <li
+              class="partner-card"
+              data-i={i}
+              data-kind={p.kind}
+              data-search={`${p.name} ${p.town} ${p.address}`.toLowerCase()}
+              data-has-pin={p.pin ? '1' : undefined}
+            >
+              <div class="partner-logo-wrap">
+                {p.logo
+                  ? <img src={p.logo} alt="" class="partner-logo" loading="lazy" />
+                  : <span class="monogram" aria-hidden="true">{initials(p.name)}</span>}
+              </div>
+              <div class="partner-body">
+                <div class="p-top">
+                  <span class:list={['kind-tag', p.kind]}>{p.kind === 'pour' ? 'By the glass' : 'Bottle shop'}</span>
+                  <span class="p-distance"></span>
+                </div>
+                <h3>{p.name}</h3>
+                <p class="p-address">{p.address || p.town}</p>
+                {p.notes && <p class="p-notes">{p.notes}</p>}
+                <div class="p-actions">
+                  <a href={p.mapsUrl} class="p-directions" target="_blank" rel="noopener">Directions</a>
+                  {p.pin && <button type="button" class="p-link show-on-map">Show on map</button>}
                   {p.phone && <a href={`tel:${p.phone.replace(/[^\d+]/g, '')}`} class="p-link">Call</a>}
                   {p.website && <a href={p.website} class="p-link" target="_blank" rel="noopener">Website</a>}
                   {p.instagram && <a href={p.instagram} class="p-link" target="_blank" rel="noopener">Instagram</a>}
                 </div>
               </div>
-            </div>
-          </article>
-        ))}
+            </li>
+          ))}
+          <li class="no-results" id="noResults" hidden>
+            No spots match that search yet. <a href="mailto:chaos-cellars@outlook.com">Tell us where you'd like to find us</a> and we'll see what we can do.
+          </li>
+        </ol>
       </div>
-
-      <p class="no-results" id="noResults" hidden>
-        No spots match that search yet. <a href="mailto:chaos-cellars@outlook.com">Tell us where you'd like to find us</a> and we'll see what we can do.
-      </p>
 
       {nextEvent && next && (
         <a href="/events" class="next-event" data-end={nextEvent.end}>
@@ -91,26 +111,95 @@ const initials = (name: string) =>
     </div>
   </section>
 
+  <script type="application/json" id="partnerData" set:html={mapData}></script>
 </Layout>
 
 <script>
-  const cards = [...document.querySelectorAll<HTMLElement>('.partner-card')];
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+
+  type Spot = { i: number; name: string; kind: 'shop' | 'pour'; town: string; maps: string; pin: { lat: number; lng: number } | null };
+  const spots: Spot[] = JSON.parse(document.getElementById('partnerData')?.textContent || '[]');
+
+  const list = document.getElementById('partnerList') as HTMLOListElement;
+  const cards = [...list.querySelectorAll<HTMLElement>('.partner-card')];
+  const cardFor = (i: number) => cards.find((c) => c.dataset.i === String(i));
   const chips = [...document.querySelectorAll<HTMLButtonElement>('.chip')];
   const search = document.getElementById('partnerSearch') as HTMLInputElement;
   const noResults = document.getElementById('noResults') as HTMLElement;
-  let kind = 'all';
+  const nearBtn = document.getElementById('nearMe') as HTMLButtonElement;
+  const nearStatus = document.getElementById('nearStatus') as HTMLElement;
+  const mapEl = document.getElementById('partnerMap') as HTMLElement;
+  const wide = window.matchMedia('(min-width: 900px)');
 
+  // ── Map ──
+  const map = L.map(mapEl, { scrollWheelZoom: false, zoomControl: true, attributionControl: true });
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  }).addTo(map);
+  // Default view: Finger Lakes → Buffalo.
+  map.setView([42.75, -77.6], 8);
+
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+  const icon = (kind: string, active = false) =>
+    L.divIcon({ className: '', html: `<span class="pin ${kind}${active ? ' is-active' : ''}"></span>`, iconSize: [22, 22], iconAnchor: [11, 11], popupAnchor: [0, -10] });
+
+  const markers = new Map<number, L.Marker>();
+  for (const s of spots) {
+    if (!s.pin) continue;
+    const m = L.marker([s.pin.lat, s.pin.lng], { icon: icon(s.kind), title: s.name, keyboard: true })
+      .bindPopup(
+        `<strong class="pop-name">${esc(s.name)}</strong>` +
+          `<span class="pop-kind ${s.kind}">${s.kind === 'pour' ? 'By the glass' : 'Bottle shop'}</span>` +
+          (s.town ? `<span class="pop-town">${esc(s.town)}</span>` : '') +
+          `<a class="pop-dir" href="${esc(s.maps)}" target="_blank" rel="noopener">Directions →</a>`,
+        { closeButton: false, offset: [0, -2] },
+      )
+      .on('click', () => highlight(s.i, { scrollList: true }))
+      .addTo(map);
+    markers.set(s.i, m);
+  }
+
+  let activeI: number | null = null;
+  function highlight(i: number, opts: { scrollList?: boolean } = {}) {
+    if (activeI !== null) {
+      cardFor(activeI)?.classList.remove('is-active');
+      const prev = spots[activeI];
+      markers.get(activeI)?.setIcon(icon(prev.kind));
+    }
+    activeI = i;
+    const card = cardFor(i);
+    card?.classList.add('is-active');
+    markers.get(i)?.setIcon(icon(spots[i].kind, true)).setZIndexOffset(1000);
+    if (opts.scrollList && card && wide.matches) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  let you: L.Marker | null = null;
+  function fitVisible() {
+    const pts = cards
+      .filter((c) => !c.hidden && markers.has(Number(c.dataset.i)))
+      .map((c) => markers.get(Number(c.dataset.i))!.getLatLng());
+    if (you) pts.push(you.getLatLng());
+    if (pts.length === 1) map.setView(pts[0], 12);
+    else if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [40, 40], maxZoom: 12 });
+  }
+
+  // ── Filtering ──
+  let kind = 'all';
   function apply() {
     const q = search.value.trim().toLowerCase();
     let shown = 0;
     for (const c of cards) {
       const ok = (kind === 'all' || c.dataset.kind === kind) && (!q || (c.dataset.search ?? '').includes(q));
       c.hidden = !ok;
+      const m = markers.get(Number(c.dataset.i));
+      if (m) ok ? m.addTo(map) : m.remove();
       if (ok) shown++;
     }
     noResults.hidden = shown > 0;
+    fitVisible();
   }
-
   chips.forEach((chip) =>
     chip.addEventListener('click', () => {
       kind = chip.dataset.filter ?? 'all';
@@ -121,7 +210,62 @@ const initials = (name: string) =>
       apply();
     }),
   );
-  search.addEventListener('input', apply);
+  let t: number | undefined;
+  search.addEventListener('input', () => { clearTimeout(t); t = window.setTimeout(apply, 150); });
+
+  // ── Card → map ──
+  list.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('a')) return;
+    const card = target.closest<HTMLElement>('.partner-card');
+    if (!card) return;
+    const i = Number(card.dataset.i);
+    const m = markers.get(i);
+    if (!m) return;
+    highlight(i);
+    map.flyTo(m.getLatLng(), Math.max(map.getZoom(), 12), { duration: 0.6 });
+    m.openPopup();
+    if (!wide.matches) mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  // ── Near me ──
+  const miles = (a: L.LatLng, b: L.LatLng) => a.distanceTo(b) / 1609.344;
+  const fmtMi = (d: number) => `${d < 10 ? d.toFixed(1) : Math.round(d)} mi`;
+  nearBtn.addEventListener('click', () => {
+    if (!navigator.geolocation) return;
+    nearBtn.disabled = true;
+    nearStatus.hidden = false;
+    nearStatus.textContent = 'Finding you…';
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        nearBtn.disabled = false;
+        const here = L.latLng(pos.coords.latitude, pos.coords.longitude);
+        you?.remove();
+        you = L.marker(here, { icon: L.divIcon({ className: '', html: '<span class="pin you"></span>', iconSize: [18, 18], iconAnchor: [9, 9] }), title: 'You are here', zIndexOffset: -100 }).addTo(map);
+        const ranked = cards
+          .map((c) => ({ c, d: markers.has(Number(c.dataset.i)) ? miles(here, markers.get(Number(c.dataset.i))!.getLatLng()) : Infinity }))
+          .sort((a, b) => a.d - b.d);
+        for (const { c, d } of ranked) {
+          list.insertBefore(c, noResults);
+          const label = c.querySelector('.p-distance');
+          if (label) label.textContent = Number.isFinite(d) ? fmtMi(d) : '';
+        }
+        const nearest = ranked.find((r) => !r.c.hidden && Number.isFinite(r.d));
+        nearStatus.textContent = nearest ? `Sorted by distance. Closest: ${spots[Number(nearest.c.dataset.i)].name}, ${fmtMi(nearest.d)} away.` : '';
+        const pts = [here, ...ranked.filter((r) => !r.c.hidden && Number.isFinite(r.d)).slice(0, 2).map((r) => markers.get(Number(r.c.dataset.i))!.getLatLng())];
+        map.fitBounds(L.latLngBounds(pts), { padding: [50, 50], maxZoom: 12 });
+      },
+      () => {
+        nearBtn.disabled = false;
+        nearStatus.textContent = "We couldn't get your location — try searching by town instead.";
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },
+    );
+  });
+
+  fitVisible();
+  // Leaflet needs a nudge if the map's box changes size (e.g. rotating a phone).
+  new ResizeObserver(() => map.invalidateSize()).observe(mapEl);
 
   const ne = document.querySelector<HTMLElement>('.next-event[data-end]');
   if (ne && Date.parse(ne.dataset.end ?? '') <= Date.now()) ne.remove();
@@ -129,32 +273,46 @@ const initials = (name: string) =>
 
 <style>
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .finder-section { padding-top: clamp(1.75rem, 4vw, 2.5rem); }
+  /* A shorter header here so the map is visible without scrolling. */
+  :global(.page-header) { padding-top: clamp(2.25rem, 5vw, 3.5rem) !important; padding-bottom: clamp(1.75rem, 4vw, 2.75rem) !important; }
+  :global(.page-header h1) { font-size: clamp(2.4rem, 6vw, 3.6rem) !important; }
+
+  /* ── Filter bar ── */
   .finder {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.75rem 1rem;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.25rem;
   }
   .filter-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .chip {
+  .chip, .near-me {
     font: inherit;
-    font-size: 0.74rem;
+    font-size: 0.72rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 0.6rem 1rem;
+    padding: 0.6rem 0.95rem;
     border: 1px solid var(--border);
     background: var(--surface);
     color: var(--text);
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
     transition: background 0.2s, color 0.2s, border-color 0.2s;
   }
-  .chip span { color: var(--muted); margin-left: 0.3rem; }
-  .chip:hover { border-color: var(--green-dark); }
+  .chip span { color: var(--muted); }
+  .chip:hover, .near-me:hover { border-color: var(--green-dark); }
   .chip.is-active { background: var(--green-dark); border-color: var(--green-dark); color: var(--black); }
   .chip.is-active span { color: var(--green-light); }
-
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .dot.shop { background: var(--green-dark); box-shadow: 0 0 0 1.5px var(--black); }
+  .dot.pour { background: var(--wine); box-shadow: 0 0 0 1.5px var(--black); }
+  .finder-right { display: flex; gap: 0.5rem; flex: 0 1 420px; }
+  .near-me { color: var(--green-dark); white-space: nowrap; }
+  .near-me:disabled { opacity: 0.6; cursor: progress; }
   .search {
     display: flex;
     align-items: center;
@@ -163,7 +321,7 @@ const initials = (name: string) =>
     background: var(--surface);
     padding: 0 0.85rem;
     color: var(--muted);
-    flex: 0 1 300px;
+    flex: 1;
   }
   .search:focus-within { border-color: var(--green-dark); }
   .search input {
@@ -172,91 +330,94 @@ const initials = (name: string) =>
     font: inherit;
     font-size: 16px; /* prevents iOS zoom on focus */
     color: var(--text-bright);
-    padding: 0.6rem 0;
+    padding: 0.55rem 0;
     width: 100%;
     outline: none;
   }
+  .near-status { font-size: 0.82rem; color: var(--green-dark); margin: -0.5rem 0 1rem; }
+  .near-status[hidden] { display: none; }
 
-  .partners-grid {
+  /* ── Map + list ── */
+  .locator {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1.25rem;
   }
-
-  .partner-card {
-    background: var(--surface);
+  .map-wrap { position: relative; }
+  .partner-map {
+    height: 340px;
     border: 1px solid var(--border);
+    background: var(--deep);
+    z-index: 0;
+  }
+
+  .partner-list {
+    list-style: none;
     display: flex;
     flex-direction: column;
-    transition: border-color 0.2s, transform 0.2s;
+    gap: 0.75rem;
   }
-  .partner-card:hover { border-color: var(--green-mid); transform: translateY(-2px); }
+  .partner-card {
+    display: grid;
+    grid-template-columns: 76px 1fr;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    scroll-margin: 100px;
+  }
+  .partner-card:hover { border-color: var(--green-mid); }
+  .partner-card.is-active { border-color: var(--green-dark); box-shadow: inset 3px 0 0 var(--green-dark); }
+  .partner-card[data-kind='pour'].is-active { border-color: var(--wine); box-shadow: inset 3px 0 0 var(--wine); }
   .partner-card[hidden] { display: none; }
 
   .partner-logo-wrap {
-    height: 120px;
-    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    background: #fdfaf3;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fdfaf3;
+    padding: 0.5rem;
   }
-  .partner-logo { width: 100%; height: 100%; object-fit: contain; padding: 1rem 1.5rem; }
-  .monogram {
-    font-family: var(--font-serif);
-    font-size: 2.6rem;
-    color: var(--green-dark);
-    letter-spacing: 0.05em;
-  }
+  .partner-logo { width: 100%; max-height: 64px; object-fit: contain; }
+  .monogram { font-family: var(--font-serif); font-size: 1.6rem; color: var(--green-dark); }
 
-  .partner-body {
-    padding: 1.25rem 1.5rem 1.5rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
+  .partner-body { padding: 0.9rem 1.1rem 1rem; min-width: 0; }
+  .p-top { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; }
   .kind-tag {
-    align-self: flex-start;
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     font-weight: 500;
-    padding: 0.2rem 0.5rem;
-    margin-bottom: 0.6rem;
+    padding: 0.15rem 0.45rem;
   }
   .kind-tag.shop { background: rgba(122, 139, 107, 0.18); color: var(--green-dark); }
   .kind-tag.pour { background: rgba(184, 92, 71, 0.14); color: var(--wine); }
-  .partner-body h3 { font-size: 1.35rem; font-weight: 400; margin-bottom: 0.2rem; }
-  .p-town {
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
+  .p-distance { font-size: 0.75rem; font-weight: 500; color: var(--green-dark); }
+  .partner-body h3 { font-size: 1.25rem; font-weight: 400; margin-bottom: 0.15rem; }
+  .p-address { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+  .p-notes { font-family: var(--font-serif); font-style: italic; font-size: 0.95rem; color: var(--text); margin-top: 0.3rem; }
+  .p-actions { display: flex; align-items: center; gap: 0.4rem 0.9rem; flex-wrap: wrap; margin-top: 0.7rem; }
+  .p-directions {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--green-mid);
-    margin-bottom: 0.3rem;
+    color: var(--black);
+    background: var(--green-dark);
+    padding: 0.45rem 0.8rem;
+    transition: background 0.2s;
   }
-  .p-address { font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
-  .p-notes {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 0.98rem;
-    color: var(--text);
-    margin-top: 0.5rem;
-  }
-  .p-actions {
-    margin-top: auto;
-    padding-top: 1.1rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  .p-directions { padding: 0.6rem 1.1rem; font-size: 0.7rem; }
-  .p-links { display: flex; gap: 0.9rem; flex-wrap: wrap; }
+  .p-directions:hover { background: #3d4e30; }
   .p-link {
-    font-size: 0.78rem;
+    background: none;
+    border: none;
+    font: inherit;
+    font-size: 0.76rem;
     color: var(--muted);
     border-bottom: 1px solid var(--border);
-    padding-bottom: 1px;
+    padding: 0 0 1px;
+    cursor: pointer;
     transition: color 0.2s, border-color 0.2s;
   }
   .p-link:hover { color: var(--text-bright); border-color: var(--text-bright); }
@@ -264,13 +425,57 @@ const initials = (name: string) =>
   .no-results {
     text-align: center;
     font-family: var(--font-serif);
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     color: var(--muted);
-    padding: 2.5rem 1rem;
+    padding: 2rem 1rem;
+    border: 1px dashed var(--border);
   }
   .no-results[hidden] { display: none; }
   .no-results a { color: var(--green-dark); text-decoration: underline; }
 
+  @media (min-width: 900px) {
+    .locator { grid-template-columns: minmax(340px, 400px) 1fr; align-items: start; }
+    .map-wrap { order: 2; position: sticky; top: 88px; }
+    .partner-map { height: min(640px, calc(100vh - 120px)); }
+    .partner-list { order: 1; }
+  }
+  @media (max-width: 600px) {
+    .finder-right { flex-basis: 100%; }
+    .partner-map { height: 300px; }
+    .partner-card { grid-template-columns: 60px 1fr; }
+  }
+
+  /* ── Map pins & popups (Leaflet renders these outside Astro's scope) ── */
+  :global(.partner-map .leaflet-tile-pane) { filter: grayscale(0.55) sepia(0.2) contrast(0.92) brightness(1.03); }
+  :global(.partner-map .pin) {
+    display: block;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 3px solid #fdfaf3;
+    box-shadow: 0 1px 4px rgba(28, 24, 16, 0.45);
+    transition: transform 0.15s;
+  }
+  :global(.partner-map .pin.shop) { background: var(--green-dark); }
+  :global(.partner-map .pin.pour) { background: var(--wine); }
+  :global(.partner-map .pin.is-active) { transform: scale(1.35); }
+  :global(.partner-map .pin.you) {
+    width: 18px;
+    height: 18px;
+    background: #3b82c4;
+    box-shadow: 0 0 0 6px rgba(59, 130, 196, 0.25);
+  }
+  :global(.partner-map .leaflet-popup-content-wrapper) { border-radius: 0; background: var(--black); box-shadow: 0 6px 24px rgba(28, 24, 16, 0.25); }
+  :global(.partner-map .leaflet-popup-tip) { background: var(--black); }
+  :global(.partner-map .leaflet-popup-content) { margin: 0.8rem 1rem; font-family: var(--font-sans); line-height: 1.4; }
+  :global(.partner-map .pop-name) { display: block; font-family: var(--font-serif); font-weight: 400; font-size: 1.15rem; color: var(--text-bright); }
+  :global(.partner-map .pop-kind) { display: block; font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; margin: 0.15rem 0; }
+  :global(.partner-map .pop-kind.shop) { color: var(--green-dark); }
+  :global(.partner-map .pop-kind.pour) { color: var(--wine); }
+  :global(.partner-map .pop-town) { display: block; font-size: 0.78rem; color: var(--muted); }
+  :global(.partner-map .pop-dir) { display: inline-block; margin-top: 0.45rem; font-size: 0.75rem; font-weight: 500; color: var(--green-dark); }
+
+  /* ── Below the map ── */
   .next-event {
     margin-top: 3rem;
     display: flex;
@@ -282,13 +487,7 @@ const initials = (name: string) =>
     transition: background 0.2s;
   }
   .next-event:hover { background: #3d4e30; }
-  .ne-date {
-    font-family: var(--font-serif);
-    font-size: 2rem;
-    line-height: 1;
-    text-align: center;
-    min-width: 3rem;
-  }
+  .ne-date { font-family: var(--font-serif); font-size: 2rem; line-height: 1; text-align: center; min-width: 3rem; }
   .ne-date span { display: block; font-family: var(--font-sans); font-size: 0.6rem; letter-spacing: 0.15em; color: var(--green-light); margin-bottom: 0.15rem; }
   .ne-copy { flex: 1; min-width: 0; }
   .ne-label { display: block; font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--green-light); }
@@ -304,9 +503,4 @@ const initials = (name: string) =>
   }
   .partners-cta h2 { font-size: clamp(1.6rem, 3vw, 2.25rem); margin-bottom: 0.75rem; }
   .partners-cta p { color: var(--muted); font-family: var(--font-serif); font-size: 1.05rem; margin: 0 auto 2rem; max-width: 480px; }
-
-  @media (max-width: 700px) {
-    .search { flex-basis: 100%; }
-    .partners-grid { grid-template-columns: 1fr; }
-  }
 </style>

@@ -4,8 +4,10 @@
 // src/data/sources.json). One row per place; add a row to add a partner,
 // delete the row to remove one. Columns (header names, any order):
 //
-//   Name | Type | Town | Address | Notes | Website | Instagram | Phone
+//   Name | Type | Town | Address | Notes | Website | Instagram | Phone | Map Pin
 //
+// Each address is placed on the map automatically. Map Pin is optional: fill
+// it in ("42.66, -77.05", copied from Google Maps) only if a pin lands wrong.
 // Type: anything mentioning bar / restaurant / brewery / glass is shown under
 // "By the glass"; everything else is a bottle shop. Instagram can be a URL or
 // an @handle. A logo is picked up automatically from
@@ -16,6 +18,7 @@ import { fileURLToPath } from 'node:url';
 import sources from '../data/sources.json';
 import fallback from '../data/partners.json';
 import { mapsUrl } from './events';
+import { geocode, parseLatLng, type LatLng } from './geocode';
 
 export type PartnerKind = 'shop' | 'pour';
 
@@ -30,6 +33,7 @@ export interface Partner {
   phone: string;
   logo: string | null;
   mapsUrl: string;
+  pin: LatLng | null;
 }
 
 let cache: Promise<Partner[]> | null = null;
@@ -42,6 +46,9 @@ export function getPartners(): Promise<Partner[]> {
 async function load(): Promise<Partner[]> {
   const url = process.env.PARTNERS_CSV_URL || sources.partnersSheetCsvUrl.trim();
   const list = url ? fromCsv(await fetchCsv(url)) : fromJson();
+  for (const p of list) {
+    p.pin ??= await geocode(p.address);
+  }
   return list.sort((a, b) => a.town.localeCompare(b.town) || a.name.localeCompare(b.name));
 }
 
@@ -90,6 +97,7 @@ export function fromCsv(text: string): Partner[] {
         phone: col(r, 'phone'),
         logo: findLogo(name),
         mapsUrl: mapsUrl([name, address].filter(Boolean).join(', ')),
+        pin: parseLatLng(col(r, 'map pin', 'pin', 'coordinates', 'lat, lng', 'latlng')),
       };
     })
     .filter((p) => p.name);
@@ -162,6 +170,7 @@ function fromJson(): Partner[] {
     phone: p.phone,
     logo: p.logo ? encodeURI(p.logo) : findLogo(p.name),
     mapsUrl: mapsUrl(`${p.name}, ${p.address}`),
+    pin: null,
   });
   return [
     ...fallback.wine_stores.map((p) => map(p, 'shop')),
