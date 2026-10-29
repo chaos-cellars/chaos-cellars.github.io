@@ -1,19 +1,46 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getUpcomingEvents, dateParts, timeLabel, calendarSubscribeUrl } from '../lib/events';
+import { getUpcomingEvents, dateParts, timeLabel, calendarSubscribeUrl, SITE_TZ } from '../lib/events';
 
 const events = await getUpcomingEvents();
 const subscribeUrl = calendarSubscribeUrl();
 
-// Group by month, keeping order.
-const groups: { label: string; items: typeof events }[] = [];
-for (const e of events) {
-  const label = dateParts(e).monthYear;
-  const last = groups[groups.length - 1];
-  if (last?.label === label) last.items.push(e);
-  else groups.push({ label, items: [e] });
-}
+// The next three events get banners at the top; the calendar below holds everything.
+const BANNER_COUNT = 3;
+const banners = events.slice(0, BANNER_COUNT);
 const nextId = events[0]?.id;
+
+// Calendar data: one entry per event, with the local (site time zone) days it covers.
+const dayKey = (d: Date) =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: SITE_TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+const calendarData = events.map((e) => {
+  const days: string[] = [];
+  const start = new Date(e.start);
+  const end = new Date(e.end);
+  // All-day ends are exclusive; timed events count the day they end on.
+  const last = e.allDay ? new Date(end.getTime() - 1) : end;
+  for (let t = start.getTime(); dayKey(new Date(t)) <= dayKey(last) && days.length < 31; t += 864e5) {
+    days.push(dayKey(new Date(t)));
+  }
+  if (!days.length) days.push(dayKey(start));
+  const date = dateParts(e);
+  return {
+    id: e.id,
+    title: e.title,
+    days,
+    end: e.end,
+    weekday: date.weekday,
+    shortMonth: date.shortMonth,
+    day: date.day,
+    time: timeLabel(e),
+    venue: e.venue,
+    address: e.address,
+    mapsUrl: e.mapsUrl,
+    ticketUrl: e.ticketUrl,
+    soldOut: e.soldOut,
+    ics: `/events/${e.id}.ics`,
+  };
+});
 ---
 <Layout title="Events" description="Upcoming tastings and events featuring Chaos Cellars wines in the Finger Lakes and Western New York.">
 
@@ -26,76 +53,90 @@ const nextId = events[0]?.id;
   <section class="section">
     <div class="container">
 
-      <div class="events-groups" id="eventsGroups">
-        {groups.map((g) => (
-          <div class="month-group">
-            <h2 class="month-label">{g.label}</h2>
-            <div class="events-list">
-              {g.items.map((event) => {
-                const date = dateParts(event);
-                const where = [event.venue, event.address].filter(Boolean).join(' — ');
-                return (
-                  <article
-                    class:list={['event-card', { 'is-next': event.id === nextId, 'is-sold-out': event.soldOut }]}
-                    data-end={event.end}
-                  >
-                    <div class="event-date-col">
-                      <span class="ev-month">{date.shortMonth}</span>
-                      <span class="ev-day">{date.day}</span>
-                      <span class="ev-weekday-short">{date.weekday.slice(0, 3)}</span>
+      <div class="events-upcoming" id="eventsUpcoming" hidden={events.length === 0}>
+        <h2 class="section-label">Coming up</h2>
+        <div class="events-list">
+          {banners.map((event) => {
+            const date = dateParts(event);
+            const where = [event.venue, event.address].filter(Boolean).join(' — ');
+            return (
+              <article
+                class:list={['event-card', { 'is-next': event.id === nextId, 'is-sold-out': event.soldOut }]}
+                data-end={event.end}
+              >
+                <div class="event-date-col">
+                  <span class="ev-month">{date.shortMonth}</span>
+                  <span class="ev-day">{date.day}</span>
+                  <span class="ev-weekday-short">{date.weekday.slice(0, 3)}</span>
+                </div>
+                <div class="event-body">
+                  <span class="next-tag">Next up</span>
+                  <p class="event-meta">
+                    <span class="ev-weekday">{date.weekday}</span>
+                    <span class="ev-time">{timeLabel(event)}</span>
+                  </p>
+                  <h3 class="ev-title">{event.title}</h3>
+                  {where && (
+                    <p class="ev-location">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                        <path d="M6 1C4.07 1 2.5 2.57 2.5 4.5c0 2.625 3.5 6.5 3.5 6.5s3.5-3.875 3.5-6.5C9.5 2.57 7.93 1 6 1zm0 4.75a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z" fill="currentColor"/>
+                      </svg>
+                      {where}
+                    </p>
+                  )}
+                  {event.description.length > 0 && (
+                    <div class="ev-desc">
+                      {event.description.map((p) => <p>{p}</p>)}
                     </div>
-                    <div class="event-body">
-                      <span class="next-tag">Next up</span>
-                      <p class="event-meta">
-                        <span class="ev-weekday">{date.weekday}</span>
-                        <span class="ev-time">{timeLabel(event)}</span>
-                      </p>
-                      <h3 class="ev-title">{event.title}</h3>
-                      {where && (
-                        <p class="ev-location">
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                            <path d="M6 1C4.07 1 2.5 2.57 2.5 4.5c0 2.625 3.5 6.5 3.5 6.5s3.5-3.875 3.5-6.5C9.5 2.57 7.93 1 6 1zm0 4.75a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z" fill="currentColor"/>
-                          </svg>
-                          {where}
-                        </p>
-                      )}
-                      {event.description.length > 0 && (
-                        <div class="ev-desc">
-                          {event.description.map((p) => <p>{p}</p>)}
-                        </div>
-                      )}
-                      <div class="ev-actions">
-                        {event.soldOut ? (
-                          <span class="badge-sold-out">Sold Out</span>
-                        ) : event.ticketUrl ? (
-                          <a href={event.ticketUrl} class="btn btn-primary" target="_blank" rel="noopener">Get Tickets</a>
-                        ) : null}
-                        {where && (
-                          <a href={event.mapsUrl} class="btn btn-ghost" target="_blank" rel="noopener">Directions</a>
-                        )}
-                        <a href={`/events/${event.id}.ics`} class="btn btn-ghost">Add to Calendar</a>
-                        {event.instagramUrl && (
-                          <a href={event.instagramUrl} class="text-link" target="_blank" rel="noopener">Instagram</a>
-                        )}
-                        {event.moreUrl && (
-                          <a href={event.moreUrl} class="text-link" target="_blank" rel="noopener">More info</a>
-                        )}
-                        {event.flyer && (
-                          <button type="button" class="text-link flyer-btn" data-flyer={event.flyer} data-title={event.title}>View flyer</button>
-                        )}
-                      </div>
-                    </div>
-                    {event.flyer && (
-                      <button type="button" class="flyer-thumb-btn" data-flyer={event.flyer} data-title={event.title} aria-label={`View flyer for ${event.title}`}>
-                        <img src={event.flyer} alt="" class="flyer-thumb" loading="lazy" />
-                      </button>
+                  )}
+                  <div class="ev-actions">
+                    {event.soldOut ? (
+                      <span class="badge-sold-out">Sold Out</span>
+                    ) : event.ticketUrl ? (
+                      <a href={event.ticketUrl} class="btn btn-primary" target="_blank" rel="noopener">Get Tickets</a>
+                    ) : null}
+                    {where && (
+                      <a href={event.mapsUrl} class="btn btn-ghost" target="_blank" rel="noopener">Directions</a>
                     )}
-                  </article>
-                );
-              })}
-            </div>
+                    <a href={`/events/${event.id}.ics`} class="btn btn-ghost">Add to Calendar</a>
+                    {event.instagramUrl && (
+                      <a href={event.instagramUrl} class="text-link" target="_blank" rel="noopener">Instagram</a>
+                    )}
+                    {event.moreUrl && (
+                      <a href={event.moreUrl} class="text-link" target="_blank" rel="noopener">More info</a>
+                    )}
+                    {event.flyer && (
+                      <button type="button" class="text-link flyer-btn" data-flyer={event.flyer} data-title={event.title}>View flyer</button>
+                    )}
+                  </div>
+                </div>
+                {event.flyer && (
+                  <button type="button" class="flyer-thumb-btn" data-flyer={event.flyer} data-title={event.title} aria-label={`View flyer for ${event.title}`}>
+                    <img src={event.flyer} alt="" class="flyer-thumb" loading="lazy" />
+                  </button>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      </div>
+
+      <div class="events-calendar" id="eventsCalendar" hidden={events.length === 0}>
+        <div class="cal-head">
+          <h2 class="section-label">Full calendar</h2>
+          <div class="cal-nav">
+            <button type="button" class="cal-arrow" id="calPrev" aria-label="Previous month">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg>
+            </button>
+            <span class="cal-month" id="calMonth" aria-live="polite"></span>
+            <button type="button" class="cal-arrow" id="calNext" aria-label="Next month">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
+            </button>
           </div>
-        ))}
+        </div>
+        <div class="cal-grid" id="calGrid" role="grid" aria-label="Events calendar"></div>
+        <ol class="cal-agenda" id="calAgenda"></ol>
+        <script is:inline type="application/json" id="calData" set:html={JSON.stringify(calendarData).replace(/</g, '\\u003c')}></script>
       </div>
 
       <div class="events-empty" id="eventsEmpty" hidden={events.length > 0}>
@@ -139,15 +180,109 @@ const nextId = events[0]?.id;
     document.querySelectorAll<HTMLElement>('.event-card[data-end]').forEach((card) => {
       if (Date.parse(card.dataset.end ?? '') <= now) card.remove();
     });
-    document.querySelectorAll('.month-group').forEach((g) => {
-      if (!g.querySelector('.event-card')) g.remove();
-    });
     const cards = document.querySelectorAll('.event-card');
     cards.forEach((c, i) => c.classList.toggle('is-next', i === 0));
-    const empty = document.getElementById('eventsEmpty');
-    if (empty) empty.hidden = cards.length > 0;
   }
   pruneEnded();
+
+  // ── Interactive month calendar ──
+  type CalEvent = {
+    id: string; title: string; days: string[]; end: string; weekday: string; shortMonth: string; day: number;
+    time: string; venue: string; address: string; mapsUrl: string; ticketUrl: string | null; soldOut: boolean; ics: string;
+  };
+  const raw = document.getElementById('calData')?.textContent ?? '[]';
+  const calEvents: CalEvent[] = (JSON.parse(raw) as CalEvent[]).filter((e) => Date.parse(e.end) > Date.now());
+
+  const upcoming = document.getElementById('eventsUpcoming');
+  const calendar = document.getElementById('eventsCalendar');
+  const empty = document.getElementById('eventsEmpty');
+  if (upcoming) upcoming.hidden = calEvents.length === 0;
+  if (calendar) calendar.hidden = calEvents.length === 0;
+  if (empty) empty.hidden = calEvents.length > 0;
+
+  const grid = document.getElementById('calGrid')!;
+  const agenda = document.getElementById('calAgenda')!;
+  const monthLabel = document.getElementById('calMonth')!;
+  const prevBtn = document.getElementById('calPrev') as HTMLButtonElement;
+  const nextBtn = document.getElementById('calNext') as HTMLButtonElement;
+
+  const byDay = new Map<string, CalEvent[]>();
+  for (const e of calEvents) for (const d of e.days) {
+    if (!byDay.has(d)) byDay.set(d, []);
+    byDay.get(d)!.push(e);
+  }
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const keyOf = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d)}`;
+  const todayKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  const [ty, tm] = todayKey.split('-').map(Number);
+  const firstKey = calEvents[0]?.days[0] ?? todayKey;
+  const lastKey = calEvents.reduce((k, e) => (e.days[e.days.length - 1] > k ? e.days[e.days.length - 1] : k), todayKey);
+  const minIdx = ty * 12 + (tm - 1);
+  const maxIdx = Number(lastKey.slice(0, 4)) * 12 + Number(lastKey.slice(5, 7)) - 1;
+  let viewIdx = Number(firstKey.slice(0, 4)) * 12 + Number(firstKey.slice(5, 7)) - 1;
+  let selected: string | null = null;
+
+  const esc = (t: string) => t.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  function render() {
+    const y = Math.floor(viewIdx / 12), m = viewIdx % 12;
+    monthLabel.textContent = new Date(Date.UTC(y, m, 15)).toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+    prevBtn.disabled = viewIdx <= minIdx;
+    nextBtn.disabled = viewIdx >= maxIdx;
+
+    const firstDow = new Date(Date.UTC(y, m, 1)).getUTCDay();
+    const daysIn = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    let html = WEEKDAYS.map((w) => `<div class="cal-dow" role="columnheader">${w}</div>`).join('');
+    for (let i = 0; i < firstDow; i++) html += '<div class="cal-cell is-blank" aria-hidden="true"></div>';
+    for (let d = 1; d <= daysIn; d++) {
+      const k = keyOf(y, m, d);
+      const evs = byDay.get(k) ?? [];
+      const cls = ['cal-cell', evs.length ? 'has-events' : '', k === todayKey ? 'is-today' : '', k < todayKey ? 'is-past' : '', k === selected ? 'is-selected' : ''].filter(Boolean).join(' ');
+      const chips = evs.map((e) => `<span class="cal-chip${e.soldOut ? ' is-sold-out' : ''}" title="${esc(e.title)}">${esc(e.title)}</span>`).join('');
+      const label = `${d} ${monthLabel.textContent}${evs.length ? `: ${evs.map((e) => e.title).join(', ')}` : ''}`;
+      html += evs.length
+        ? `<button type="button" class="${cls}" data-day="${k}" aria-label="${esc(label)}" aria-pressed="${k === selected}"><span class="cal-num">${d}</span><span class="cal-chips">${chips}</span><span class="cal-dots" aria-hidden="true">${evs.map(() => '<i></i>').join('')}</span></button>`
+        : `<div class="${cls}"><span class="cal-num">${d}</span></div>`;
+    }
+    const trailing = (7 - ((firstDow + daysIn) % 7)) % 7;
+    for (let i = 0; i < trailing; i++) html += '<div class="cal-cell is-blank" aria-hidden="true"></div>';
+    grid.innerHTML = html;
+
+    const monthPrefix = `${y}-${pad(m + 1)}`;
+    const monthEvents = calEvents.filter((e) => e.days.some((d) => d.startsWith(monthPrefix)));
+    agenda.innerHTML = monthEvents.length
+      ? monthEvents.map((e) => {
+          const where = [e.venue, e.address].filter(Boolean).join(' — ');
+          const on = selected !== null && e.days.includes(selected);
+          return `<li class="cal-item${on ? ' is-selected' : ''}" data-days="${e.days.join(' ')}">
+            <div class="cal-item-date"><span>${e.shortMonth}</span><strong>${e.day}</strong></div>
+            <div class="cal-item-body">
+              <p class="cal-item-meta">${esc(e.weekday)} · ${esc(e.time)}${e.soldOut ? ' · Sold out' : ''}</p>
+              <h3>${esc(e.title)}</h3>
+              ${where ? `<p class="cal-item-where">${esc(where)}</p>` : ''}
+              <p class="cal-item-links">
+                ${e.ticketUrl && !e.soldOut ? `<a href="${esc(e.ticketUrl)}" target="_blank" rel="noopener">Tickets</a>` : ''}
+                ${where ? `<a href="${esc(e.mapsUrl)}" target="_blank" rel="noopener">Directions</a>` : ''}
+                <a href="${esc(e.ics)}">Add to calendar</a>
+              </p>
+            </div>
+          </li>`;
+        }).join('')
+      : '<li class="cal-none">No events this month.</li>';
+  }
+
+  grid.addEventListener('click', (ev) => {
+    const cell = (ev.target as HTMLElement).closest<HTMLElement>('[data-day]');
+    if (!cell) return;
+    const k = cell.dataset.day!;
+    selected = selected === k ? null : k;
+    render();
+    if (selected) agenda.querySelector('.cal-item.is-selected')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+  prevBtn.addEventListener('click', () => { if (viewIdx > minIdx) { viewIdx--; selected = null; render(); } });
+  nextBtn.addEventListener('click', () => { if (viewIdx < maxIdx) { viewIdx++; selected = null; render(); } });
+  if (calEvents.length) render();
 
   const dialog = document.getElementById('flyerDialog') as HTMLDialogElement;
   const img = document.getElementById('flyerDialogImg') as HTMLImageElement;
@@ -167,19 +302,6 @@ const nextId = events[0]?.id;
 </script>
 
 <style>
-  .month-group + .month-group { margin-top: 3.5rem; }
-  .month-label {
-    font-size: 0.75rem;
-    font-family: var(--font-sans);
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--green-mid);
-    padding-bottom: 0.85rem;
-    margin-bottom: 1.25rem;
-    border-bottom: 1px solid var(--border);
-  }
-
   .events-list {
     display: flex;
     flex-direction: column;
@@ -339,6 +461,23 @@ const nextId = events[0]?.id;
     z-index: 10;
   }
 
+
+  /* ── Section labels ── */
+  .section-label {
+    font-size: 0.75rem;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+  }
+  .events-upcoming > .section-label {
+    padding-bottom: 0.85rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .events-upcoming[hidden], .events-calendar[hidden] { display: none; }
+
   /* ── Empty + footer panels ── */
   .events-empty {
     border: 1px solid var(--border);
@@ -378,5 +517,147 @@ const nextId = events[0]?.id;
     .stay-in-loop { grid-template-columns: 1fr; }
     .loop-actions { justify-content: flex-start; }
     .loop-actions .text-link { text-align: left; }
+  }
+</style>
+
+<style is:global>
+  /* ── Calendar ── */
+  .events-calendar { margin-top: 4rem; }
+  .events-calendar .cal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.85rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .events-calendar .cal-nav { display: flex; align-items: center; gap: 0.75rem; }
+  .events-calendar .cal-month {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--text-bright);
+    min-width: 10ch;
+    text-align: center;
+  }
+  .events-calendar .cal-arrow {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .events-calendar .cal-arrow:hover:not(:disabled) { background: var(--surface); border-color: var(--text); }
+  .events-calendar .cal-arrow:disabled { opacity: 0.35; cursor: default; }
+
+  .events-calendar .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .events-calendar .cal-dow {
+    background: var(--deep);
+    padding: 0.55rem 0.6rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .events-calendar .cal-cell {
+    background: var(--black);
+    min-height: 6rem;
+    padding: 0.5rem 0.55rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.3rem;
+    text-align: left;
+    font: inherit;
+    color: var(--text);
+    border: none;
+    min-width: 0;
+  }
+  .events-calendar .cal-cell.is-blank { background: var(--deep); }
+  .events-calendar .cal-cell.is-past .cal-num { color: var(--border); }
+  .events-calendar .cal-num { font-size: 0.8rem; color: var(--muted); }
+  .events-calendar .cal-cell.is-today .cal-num {
+    color: var(--black);
+    background: var(--wine);
+    width: 1.6rem; height: 1.6rem;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    align-self: flex-start;
+  }
+  .events-calendar button.cal-cell { cursor: pointer; background: var(--surface); transition: background 0.2s; }
+  .events-calendar button.cal-cell:hover { background: var(--surface-2, #d9d1bd); }
+  .events-calendar button.cal-cell.is-selected { background: var(--green-dark); }
+  .events-calendar button.cal-cell.is-selected .cal-num { color: var(--green-light); }
+  .events-calendar .cal-chips { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+  .events-calendar .cal-chip {
+    font-size: 0.72rem;
+    line-height: 1.3;
+    padding: 0.2rem 0.4rem;
+    background: var(--green-dark);
+    color: var(--black);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .events-calendar .cal-chip.is-sold-out { background: var(--muted); text-decoration: line-through; }
+  .events-calendar button.cal-cell.is-selected .cal-chip { background: var(--black); color: var(--green-dark); }
+  .events-calendar .cal-dots { display: none; }
+
+  .events-calendar .cal-agenda {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .events-calendar .cal-item {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    background: var(--black);
+    transition: background 0.2s;
+  }
+  .events-calendar .cal-item.is-selected { background: var(--surface); box-shadow: inset 3px 0 0 var(--wine); }
+  .events-calendar .cal-item-date {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-right: 1px solid var(--border);
+    padding: 0.9rem 0.5rem;
+  }
+  .events-calendar .cal-item-date span { font-size: 0.62rem; letter-spacing: 0.15em; color: var(--green-mid); }
+  .events-calendar .cal-item-date strong { font-family: var(--font-serif); font-weight: 400; font-size: 1.7rem; line-height: 1; color: var(--text-bright); }
+  .events-calendar .cal-item-body { padding: 0.9rem 1.25rem; min-width: 0; }
+  .events-calendar .cal-item-meta { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem; }
+  .events-calendar .cal-item h3 { font-size: 1.2rem; margin-bottom: 0.2rem; }
+  .events-calendar .cal-item-where { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.45rem; }
+  .events-calendar .cal-item-links { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; }
+  .events-calendar .cal-item-links a {
+    font-size: 0.75rem;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+  }
+  .events-calendar .cal-item-links a:hover { border-color: var(--text-bright); }
+  .events-calendar .cal-none { background: var(--black); padding: 1.25rem; font-family: var(--font-serif); color: var(--muted); }
+
+
+  @media (max-width: 700px) {
+    .events-calendar .cal-cell { min-height: 3.1rem; padding: 0.35rem; align-items: center; }
+    .events-calendar .cal-chips { display: none; }
+    .events-calendar .cal-dots { display: flex; gap: 3px; }
+    .events-calendar .cal-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--wine); }
+    .events-calendar button.cal-cell.is-selected .cal-dots i { background: var(--black); }
+    .events-calendar .cal-dow { padding: 0.45rem 0; text-align: center; letter-spacing: 0.05em; }
+    .events-calendar .cal-cell.is-today .cal-num { align-self: center; }
+    .events-calendar .cal-month { font-size: 1.2rem; }
   }
 </style>

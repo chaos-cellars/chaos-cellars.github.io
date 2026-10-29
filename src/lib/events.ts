@@ -60,7 +60,17 @@ export function getUpcomingEvents(now = new Date()): Promise<SiteEvent[]> {
 async function load(now: Date): Promise<SiteEvent[]> {
   const url = calendarIcsUrl();
   const all = url ? parseIcs(await fetchWithRetry(url), now) : fromJson();
+  // A calendar shared as "free/busy only" publishes every event as a bare "busy"
+  // block with no details. Never put those on the site.
+  const hidden = all.filter((e) => /^busy$/i.test(e.title.trim()) && !e.venue && !e.address);
+  if (hidden.length) {
+    console.warn(
+      `[events] Skipped ${hidden.length} "busy" event(s). The calendar is shared as free/busy only; ` +
+        'set its public access to "See all event details" so events show on the site.',
+    );
+  }
   const upcoming = all
+    .filter((e) => !hidden.includes(e))
     .filter((e) => new Date(e.end) > now)
     .sort((a, b) => a.start.localeCompare(b.start));
   // Two same-named events on one day would share an id (and an .ics URL).
