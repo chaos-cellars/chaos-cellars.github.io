@@ -152,7 +152,7 @@ function toSiteEvent(ev: ICAL.Event, startT: ICAL.Time, endT: ICAL.Time | null, 
   const rawTitle = (ev.summary ?? '').trim() || 'Chaos Cellars Tasting';
   const soldOut = /sold\s*out/i.test(rawTitle);
   const title = soldOut
-    ? rawTitle.replace(/[\s\-–—:|()[\]]*sold\s*out[\s\-–—:|()[\]]*/i, ' ').trim() || rawTitle
+    ? rawTitle.replace(/\s*[([]\s*sold\s*out\s*[)\]]\s*|[\s\-–—:|]*sold\s*out[\s\-–—:|]*/i, ' ').trim() || rawTitle
     : rawTitle;
 
   const { venue, address } = splitLocation(ev.location ?? '');
