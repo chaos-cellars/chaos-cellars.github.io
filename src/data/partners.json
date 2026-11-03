@@ -49,6 +49,16 @@
       "phone": "",
       "website": "http://www.folkbottle.com",
       "instagram": ""
+    },
+    {
+      "id": 6,
+      "name": "D.A.'s Liquors",
+      "neighborhood": "Seneca Falls, NY",
+      "address": "20 Bridge St, Seneca Falls, NY 13148",
+      "logo": "/Distribution/DAs Liquors.png",
+      "phone": "(315) 568-6354",
+      "website": "https://dasliquors.com/",
+      "instagram": ""
     }
   ],
   "on_premise": [
