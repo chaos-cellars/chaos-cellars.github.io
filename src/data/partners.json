@@ -59,6 +59,16 @@
       "phone": "(315) 568-6354",
       "website": "https://dasliquors.com/",
       "instagram": ""
+    },
+    {
+      "id": 7,
+      "name": "Pinnacle Wine & Liquor",
+      "neighborhood": "Rochester, NY",
+      "address": "1720 Monroe Ave, Rochester, NY 14618",
+      "logo": "/Distribution/Pinnacle Wine & Liquor.jpg",
+      "phone": "(585) 271-4931",
+      "website": "https://pinnacleliquor.com/",
+      "instagram": "https://www.instagram.com/pinnaclewine/"
     }
   ],
   "on_premise": [

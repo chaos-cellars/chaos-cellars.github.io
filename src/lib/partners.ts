@@ -49,7 +49,9 @@ async function load(): Promise<Partner[]> {
   for (const p of list) {
     p.pin ??= await geocode(p.address);
   }
-  return list.sort((a, b) => a.town.localeCompare(b.town) || a.name.localeCompare(b.name));
+  // Alphabetical by name, ignoring a leading "The" and punctuation (so "D.A.'s" sorts under D).
+  const key = (n: string) => n.replace(/^the\s+/i, '').replace(/[^\p{L}\p{N} ]/gu, '');
+  return list.sort((a, b) => key(a.name).localeCompare(key(b.name), 'en', { sensitivity: 'base' }));
 }
 
 async function fetchCsv(url: string, tries = 3): Promise<string> {
