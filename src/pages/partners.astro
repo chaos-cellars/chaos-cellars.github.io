@@ -232,6 +232,7 @@ const mapData = JSON.stringify(
   const miles = (a: L.LatLng, b: L.LatLng) => a.distanceTo(b) / 1609.344;
   const fmtMi = (d: number) => `${d < 10 ? d.toFixed(1) : Math.round(d)} mi`;
   nearBtn.addEventListener('click', () => {
+    userMoved = true; // keep the near-me view; don't refit over it
     if (!navigator.geolocation) return;
     nearBtn.disabled = true;
     nearStatus.hidden = false;
@@ -263,9 +264,20 @@ const mapData = JSON.stringify(
     );
   });
 
+  // Start zoomed out to every pin. If the map's box changes size before the visitor
+  // touches the map (late-loading styles, fonts, rotating a phone), fit again so the
+  // opening view never gets stuck zoomed in on one spot.
+  let userMoved = false;
+  for (const ev of ['mousedown', 'touchstart', 'wheel', 'keydown']) {
+    mapEl.addEventListener(ev, () => { userMoved = true; }, { passive: true, once: true });
+  }
+  const refit = () => {
+    map.invalidateSize();
+    if (!userMoved) fitVisible();
+  };
   fitVisible();
-  // Leaflet needs a nudge if the map's box changes size (e.g. rotating a phone).
-  new ResizeObserver(() => map.invalidateSize()).observe(mapEl);
+  new ResizeObserver(refit).observe(mapEl);
+  window.addEventListener('load', refit, { once: true });
 
   const ne = document.querySelector<HTMLElement>('.next-event[data-end]');
   if (ne && Date.parse(ne.dataset.end ?? '') <= Date.now()) ne.remove();
